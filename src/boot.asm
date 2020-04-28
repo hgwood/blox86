@@ -13,11 +13,7 @@ start:
   mov si, text_string	; Put string position into SI
   call print_string	; Call our string-printing routine
 
-.move_cursor:
-  ; 48h is up
-  ; 50h is down
-  ; 4bh is left
-  ; 4dh is right
+.wait_for_key_press:
   mov ah, 0
   int 16h
   cmp ah, 48h
@@ -30,16 +26,16 @@ start:
   je .move_cursor_right
   mov ah, 0eh
   int 10h
-  jmp .move_cursor
+  jmp .wait_for_key_press
 
 .move_cursor_up:
   mov bh, 0h
-  mov ah, 03h
+  mov ah, 03h ; get cursor
   int 10h
   sub dh, 1
-  mov ah, 02h
+  mov ah, 02h ; set cursor
   int 10h
-  jmp .move_cursor
+  jmp .wait_for_key_press
 
 .move_cursor_down:
   mov bh, 0h
@@ -48,7 +44,7 @@ start:
   add dh, 1
   mov ah, 02h
   int 10h
-  jmp .move_cursor
+  jmp .wait_for_key_press
 
 .move_cursor_left:
   mov bh, 0h
@@ -57,7 +53,7 @@ start:
   sub dl, 1
   mov ah, 02h
   int 10h
-  jmp .move_cursor
+  jmp .wait_for_key_press
 
 .move_cursor_right:
   mov bh, 0h
@@ -66,7 +62,7 @@ start:
   add dl, 1
   mov ah, 02h
   int 10h
-  jmp .move_cursor
+  jmp .wait_for_key_press
 
 .print_keys:
   mov ah, 0
