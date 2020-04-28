@@ -9,6 +9,56 @@ start:
   mov ax, 07C0h		; Set data segment to where we're loaded
   mov ds, ax
 
+  call .draw_walls
+  jmp .wait_for_key_press
+
+.draw_walls:
+  call .draw_upper_wall
+  call .draw_left_wall
+  call .draw_right_wall
+  ret
+
+.draw_upper_wall:
+  mov al, 58h
+  mov dh, 0
+  mov dl, 0
+  .draw_upper_wall_cell:
+    call .print_char_at
+    add dl, 1
+    cmp dl, 60
+    jl .draw_upper_wall_cell
+  ret
+
+.draw_left_wall:
+  mov al, 58h
+  mov dh, 0
+  mov dl, 0
+  .draw_left_wall_cell:
+    call .print_char_at
+    add dh, 1
+    cmp dh, 25
+    jl .draw_left_wall_cell
+  ret
+
+.draw_right_wall:
+  mov al, 58h
+  mov dh, 0
+  mov dl, 60
+  .draw_right_wall_cell:
+    call .print_char_at
+    add dh, 1
+    cmp dh, 25
+    jl .draw_right_wall_cell
+  ret
+
+; draws char=al at x=dl, y=dh
+.print_char_at:
+  mov ah, 02h
+  int 10h
+  mov ah, 0eh
+  int 10h
+  ret
+
 .wait_for_key_press:
   mov ah, 0
   int 16h
