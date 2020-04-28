@@ -13,45 +13,54 @@ start:
   jmp .wait_for_key_press
 
 .draw_walls:
+  mov al, 58h ; 'X'
   call .draw_upper_wall
   call .draw_left_wall
   call .draw_right_wall
   ret
 
 .draw_upper_wall:
-  mov al, 58h
   mov dh, 0
-  mov dl, 0
-  .draw_upper_wall_cell:
-    call .print_char_at
-    add dl, 1
-    cmp dl, 60
-    jl .draw_upper_wall_cell
+  mov ch, 0
+  mov cl, 60
+  call .print_horizontal_line
   ret
 
 .draw_left_wall:
-  mov al, 58h
-  mov dh, 0
   mov dl, 0
-  .draw_left_wall_cell:
-    call .print_char_at
-    add dh, 1
-    cmp dh, 25
-    jl .draw_left_wall_cell
+  mov ch, 0
+  mov cl, 25
+  call .print_vertical_line
   ret
 
 .draw_right_wall:
-  mov al, 58h
-  mov dh, 0
   mov dl, 60
-  .draw_right_wall_cell:
-    call .print_char_at
-    add dh, 1
-    cmp dh, 25
-    jl .draw_right_wall_cell
+  mov ch, 0
+  mov cl, 25
+  call .print_vertical_line
   ret
 
-; draws char=al at x=dl, y=dh
+; prints horizontal line of char=al at y=dh from x1=ch to x2=cl
+.print_horizontal_line:
+  mov dl, ch
+  .print_horizontal_line_loop:
+    call .print_char_at
+    add dl, 1
+    cmp dl, cl
+    jl .print_horizontal_line_loop
+  ret
+
+; prints vertical line of char=al at x=dl from y1=ch to y2=cl
+.print_vertical_line:
+  mov dh, ch
+  .print_vertical_line_loop:
+    call .print_char_at
+    add dh, 1
+    cmp dh, cl
+    jl .print_vertical_line_loop
+  ret
+
+; prints char=al at x=dl, y=dh
 .print_char_at:
   mov ah, 02h
   int 10h
