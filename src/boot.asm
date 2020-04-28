@@ -9,15 +9,48 @@ start:
   mov ax, 07C0h		; Set data segment to where we're loaded
   mov ds, ax
 
-  call .draw_player
   call .draw_walls
-  jmp .wait_for_key_press
-
-.draw_player:
-  mov al, 54h ; 'T'
-  mov dh, 24
   mov ch, 10
   mov cl, 20
+  call .draw_player
+  .game_loop:
+    call .update_player_position
+    call .draw_player
+    jmp .game_loop
+
+.update_player_position:
+  mov ah, 0
+  int 16h
+  cmp ah, 4bh
+  je .move_player_left
+  cmp ah, 4dh
+  je .move_player_right
+  jmp .done
+  .move_player_left:
+    sub ch, 1
+    sub cl, 1
+    jmp .done
+  .move_player_right:
+    add ch, 1
+    add cl, 1
+    jmp .done
+  .done:
+    ret
+
+; draws player between x1=ch and x2=cl
+.draw_player:
+  mov dh, 24 ; drawing on the bottom line
+
+  ; reset all potential player cells to blank
+  push cx
+  mov al, 20h ; ' '
+  mov ch, 1
+  mov cl, 60
+  call .print_horizontal_line
+
+  ; actually draw player
+  pop cx
+  mov al, 54h ; 'T'
   call .print_horizontal_line
   ret
 
@@ -71,6 +104,7 @@ start:
 
 ; prints char=al at x=dl, y=dh
 .print_char_at:
+  mov bh, 0
   mov ah, 02h
   int 10h
   mov ah, 0eh
