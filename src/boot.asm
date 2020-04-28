@@ -22,15 +22,19 @@ start:
   mov ah, 0
   int 16h
   cmp ah, 4bh
-  je .move_player_left
+  je .move_player_left_if_possible
   cmp ah, 4dh
-  je .move_player_right
+  je .move_player_right_if_possible
   jmp .done
-  .move_player_left:
+  .move_player_left_if_possible:
+    cmp ch, 1
+    je .done
     sub ch, 1
     sub cl, 1
     jmp .done
-  .move_player_right:
+  .move_player_right_if_possible:
+    cmp cl, 60
+    je .done
     add ch, 1
     add cl, 1
     jmp .done
