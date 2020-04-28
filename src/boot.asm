@@ -13,6 +13,19 @@ start:
   mov si, text_string	; Put string position into SI
   call print_string	; Call our string-printing routine
 
+.print_keys:
+  mov ah, 0
+  int 16h
+  mov bh, ah
+  mov bl, al
+  mov al, bh
+  mov ah, 0Eh
+  int 10h
+  mov al, bl
+  mov ah, 0Eh
+  int 10h
+  jmp .print_keys
+
   jmp $			; Jump here - infinite loop!
 
 
