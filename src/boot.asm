@@ -13,6 +13,22 @@ start:
   mov si, text_string	; Put string position into SI
   call print_string	; Call our string-printing routine
 
+.move_cursor:
+  mov ah, 0
+  int 16h
+  cmp ah, 50h
+  je .move_cursor_down
+  jmp .move_cursor
+
+.move_cursor_down:
+  mov bh, 0h
+  mov ah, 03h
+  int 10h
+  add dh, 1
+  mov ah, 02h
+  int 10h
+  jmp .move_cursor
+
 .print_keys:
   mov ah, 0
   int 16h
