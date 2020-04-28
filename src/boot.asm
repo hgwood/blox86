@@ -9,8 +9,17 @@ start:
   mov ax, 07C0h		; Set data segment to where we're loaded
   mov ds, ax
 
+  call .draw_player
   call .draw_walls
   jmp .wait_for_key_press
+
+.draw_player:
+  mov al, 54h ; 'T'
+  mov dh, 24
+  mov ch, 10
+  mov cl, 20
+  call .print_horizontal_line
+  ret
 
 .draw_walls:
   mov al, 58h ; 'X'
