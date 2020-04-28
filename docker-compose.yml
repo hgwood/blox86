@@ -1,0 +1,7 @@
+version: "3.7"
+services:
+  linux:
+    build: .
+    volumes:
+      - ./:/work
+    working_dir: /work
