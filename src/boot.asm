@@ -28,7 +28,7 @@ start:
   je .move_cursor_left
   cmp ah, 4dh
   je .move_cursor_right
-  mov ah, 0Eh
+  mov ah, 0eh
   int 10h
   jmp .move_cursor
 
@@ -74,10 +74,10 @@ start:
   mov bh, ah
   mov bl, al
   mov al, bh
-  mov ah, 0Eh
+  mov ah, 0eh
   int 10h
   mov al, bl
-  mov ah, 0Eh
+  mov ah, 0eh
   int 10h
   jmp .print_keys
 
@@ -88,7 +88,7 @@ start:
 
 
 print_string:			; Routine: output string in SI to screen
-  mov ah, 0Eh		; int 10h 'print char' function
+  mov ah, 0eh		; int 10h 'print char' function
 
 .repeat:
   lodsb			; Get character from string
