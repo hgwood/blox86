@@ -14,12 +14,19 @@ start:
   mov cl, 20
   call .draw_player
   .game_loop:
+    push cx
     call .update_player_position
+    pop dx
+    cmp dx, cx
+    je .game_loop
     call .draw_player
     jmp .game_loop
 
 .update_player_position:
-  mov ah, 0
+  mov ah, 01h
+  int 16h
+  jz .done
+  mov ah, 00h
   int 16h
   cmp ah, 4bh
   je .move_player_left_if_possible
