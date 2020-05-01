@@ -1,13 +1,17 @@
-  BITS 16
+BITS 16
 
 start:
-  mov ax, 07C0h		; Set up 4K stack space after this bootloader
-  add ax, 288		; (4096 + 512) / 16 bytes per paragraph
-  mov ss, ax
-  mov sp, 4096
+  ; set up 4K stack space after this bootloader
+  mov ax, 7c0h ; 7c0 is the address of the bootloader
+  add ax, 512 ; skip to the end of the bootloader
+  mov ss, ax ; set stack segment
+  mov sp, 4095 ; set stack pointer to empty stack (remember the stack is reversed)
 
-  mov ax, 07C0h		; Set data segment to where we're loaded
-  mov ds, ax
+  ; set up the data segment after the stack
+  mov ax, 7c0h ; 7c0 is the address of the bootloader
+  add ax, 512 ; skip to the end of the bootloader
+  add ax, 4096 ; skip to the end of the stack
+  mov ds, ax ; set data segment
 
   call .draw_walls
   mov ch, 10
