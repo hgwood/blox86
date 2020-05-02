@@ -119,7 +119,7 @@ update_player:
 ; dx = ticks (assumes cx set by read_time is zero)
 update_ball:
   pusha
-  ; save previous position for comparison at the end
+  ; save previous position on the stack
   push word [si + 2]
   .update_x:
     ; skip if speed is zero
@@ -142,9 +142,10 @@ update_ball:
     je .horizontal_wall_hit
     jne .no_horizontal_wall_hit
     .horizontal_wall_hit:
-      sub byte [di + 2], al
+      ; negate speed
       neg byte [di + 6]
-      pop word [si + 2] ; reset position and clean up the stack before recursive call
+      ; reset position and clean up the stack before recursive call
+      pop word [di + 2]
       call update_ball
       jmp .return
     .no_horizontal_wall_hit:
@@ -169,15 +170,27 @@ update_ball:
     cmp byte [si + 3], 0
     je .vertical_wall_hit
     cmp byte [si + 3], 24
-    je .vertical_wall_hit
-    jne .no_vertical_wall_hit
+    je .maybe_player_hit
+    jne .no_hit
     .vertical_wall_hit:
-      sub byte [di + 3], al
+      ; negate speed
       neg byte [di + 7]
-      pop word [si + 2] ; reset position and clean up the stack before recursive call
+      ; reset position and clean up the stack before recursive call
+      pop word [di + 2]
       call update_ball
       jmp .return
-    .no_vertical_wall_hit:
+    .maybe_player_hit:
+      pop cx ; pop previous position
+      push cx ; push it back immediatly .no_hit and .vertical_wall_hit need it
+      cmp cl, byte [si + 0] ; compare ball x with player left x
+      jl .no_hit ; ball is left of player
+      ; compute player right x
+      mov ch, byte [si + 0]
+      add ch, byte [si + 1]
+      cmp cl, ch ; compare ball x with player right x
+      jge .no_hit ; ball is right of player
+      jmp .vertical_wall_hit ; player hit is same as vertical wall hit
+    .no_hit:
     ; set carry for next update
     mov byte [di + 5], ah
   .end_update_y:
