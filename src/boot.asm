@@ -18,14 +18,15 @@ start:
   ; initialize game state
   mov [di + 0], byte 0 ; player_left_x, relative to game arena
   mov [di + 1], byte 10 ; player_size
-  mov [di + 2], byte 0 ; ball_x
-  mov [di + 3], byte 0 ; ball_y
+  mov [di + 2], byte 1 ; ball_x
+  mov [di + 3], byte 1 ; ball_y
   mov [di + 4], byte 0 ; ball_x_carry
   mov [di + 5], byte 0 ; ball_y_carry
-  mov [di + 6], byte 10 ; ball_speed_x, in ticks per unit
-  mov [di + 7], byte 20 ; ball_speed_y, in ticks per unit
+  mov [di + 6], byte 1 ; ball_speed_x, in ticks per unit
+  mov [di + 7], byte 1 ; ball_speed_y, in ticks per unit
   mov [di + 10], dword 0 ; system time in ticks
 
+call draw_walls
 game_loop:
   call read_time
   call update_ball
@@ -48,9 +49,22 @@ update_ball:
     mov ax, dx
     add ax, bx
     ; divide by speed, result in ax
-    div byte [si + 6]
+    idiv byte [si + 6]
     ; update position
     add byte [di + 2], al
+    ; handle wall collisions
+    cmp byte [si + 2], 0
+    je .horizontal_wall_hit
+    cmp byte [si + 2], 60
+    je .horizontal_wall_hit
+    jne .no_horizontal_wall_hit
+    .horizontal_wall_hit:
+      sub byte [di + 2], al
+      neg byte [di + 6]
+      pop word [si + 2] ; reset position and clean up the stack before recursive call
+      call update_ball
+      jmp .return
+    .no_horizontal_wall_hit:
     ; set carry for next update
     mov byte [di + 4], ah
   .end_update_x:
@@ -65,9 +79,22 @@ update_ball:
     mov ax, dx
     add ax, bx
     ; divide by speed, result in ax
-    div byte [si + 7]
+    idiv byte [si + 7]
     ; update position
     add byte [di + 3], al
+    ; handle wall collisions
+    cmp byte [si + 3], 0
+    je .vertical_wall_hit
+    cmp byte [si + 3], 24
+    je .vertical_wall_hit
+    jne .no_vertical_wall_hit
+    .vertical_wall_hit:
+      sub byte [di + 3], al
+      neg byte [di + 7]
+      pop word [si + 2] ; reset position and clean up the stack before recursive call
+      call update_ball
+      jmp .return
+    .no_vertical_wall_hit:
     ; set carry for next update
     mov byte [di + 5], ah
   .end_update_y:
@@ -212,53 +239,65 @@ read_time:
 ;   call .print_horizontal_line
 ;   ret
 
-; .draw_walls:
-;   mov al, 58h ; 'X'
-;   call .draw_upper_wall
-;   call .draw_left_wall
-;   call .draw_right_wall
-;   ret
+draw_walls:
+  pusha
+  mov al, 58h ; 'X'
+  call draw_upper_wall
+  call draw_left_wall
+  call draw_right_wall
+  popa
+  ret
 
-; .draw_upper_wall:
-;   mov dh, 0
-;   mov ch, 0
-;   mov cl, 60
-;   call .print_horizontal_line
-;   ret
+draw_upper_wall:
+  pusha
+  mov dh, 0
+  mov ch, 0
+  mov cl, 60
+  call print_horizontal_line
+  popa
+  ret
 
-; .draw_left_wall:
-;   mov dl, 0
-;   mov ch, 0
-;   mov cl, 25
-;   call .print_vertical_line
-;   ret
+draw_left_wall:
+  pusha
+  mov dl, 0
+  mov ch, 0
+  mov cl, 25
+  call print_vertical_line
+  popa
+  ret
 
-; .draw_right_wall:
-;   mov dl, 60
-;   mov ch, 0
-;   mov cl, 25
-;   call .print_vertical_line
-;   ret
+draw_right_wall:
+  pusha
+  mov dl, 60
+  mov ch, 0
+  mov cl, 25
+  call print_vertical_line
+  popa
+  ret
 
-; ; prints horizontal line of char=al at y=dh from x1=ch to x2=cl
-; .print_horizontal_line:
-;   mov dl, ch
-;   .print_horizontal_line_loop:
-;     call .print_char_at
-;     add dl, 1
-;     cmp dl, cl
-;     jl .print_horizontal_line_loop
-;   ret
+; prints horizontal line of char=al at y=dh from x1=ch to x2=cl
+print_horizontal_line:
+  pusha
+  mov dl, ch
+  print_horizontal_line_loop:
+    call print_char_at
+    inc dl
+    cmp dl, cl
+    jl print_horizontal_line_loop
+  popa
+  ret
 
-; ; prints vertical line of char=al at x=dl from y1=ch to y2=cl
-; .print_vertical_line:
-;   mov dh, ch
-;   .print_vertical_line_loop:
-;     call .print_char_at
-;     add dh, 1
-;     cmp dh, cl
-;     jl .print_vertical_line_loop
-;   ret
+; prints vertical line of char=al at x=dl from y1=ch to y2=cl
+print_vertical_line:
+  pusha
+  mov dh, ch
+  print_vertical_line_loop:
+    call print_char_at
+    inc dh
+    cmp dh, cl
+    jl print_vertical_line_loop
+  popa
+  ret
 
 ; prints char=al at x=dl, y=dh
 print_char_at:
