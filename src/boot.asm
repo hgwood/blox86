@@ -35,34 +35,53 @@ game_loop:
 ; dx = ticks (assumes cx set by read_time is zero)
 update_ball:
   pusha
-  push word [si + 2] ; save previous position for comparison at the end
+  ; save previous position for comparison at the end
+  push word [si + 2]
   .update_x:
+    ; skip if speed is zero
     cmp byte [si + 6], 0
-    je .update_y
+    je .end_update_x
+    ; expand carry to word and into bx so it can be added to ticks
     mov bl, [si + 4]
     mov bh, 0
+    ; add carry to ticks, result in ax
     mov ax, dx
     add ax, bx
+    ; divide by speed, result in ax
     div byte [si + 6]
+    ; update position
     add byte [di + 2], al
+    ; set carry for next update
     mov byte [di + 4], ah
+  .end_update_x:
   .update_y:
+    ; skip if speed is zero
     cmp byte [si + 7], 0
-    je .draw
+    je .end_update_y
+    ; expand carry to word and into bx so it can be added to ticks
     mov bl, [si + 5]
     mov bh, 0
+    ; add carry to ticks, result in ax
     mov ax, dx
     add ax, bx
+    ; divide by speed, result in ax
     div byte [si + 7]
+    ; update position
     add byte [di + 3], al
+    ; set carry for next update
     mov byte [di + 5], ah
+  .end_update_y:
   .draw:
+    ; pop previous position into dx
     pop dx
+    ; skip draw if position has not changed
     cmp dx, word [si + 2]
     je .return
+    ; erase previous ball
     mov al, 20h ; ' '
     ; position already in dx, ready to print
     call print_char_at
+    ; draw new ball
     mov al, 4fh ; 'O'
     mov dx, word [si + 2]
     call print_char_at
