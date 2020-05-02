@@ -56,7 +56,7 @@ update_player:
   ; mov ah, 0
   .move_left:
     sub al, ah
-    ; erase right side
+    ; shrink right side
     mov cl, [si + 0]
     add cl, [si + 1]
     dec cl
@@ -67,7 +67,7 @@ update_player:
     mov dh, 24
     call print_horizontal_line
     pop ax
-    ; draw left side
+    ; extend left side
     mov ch, [si + 0]
     sub ch, al
     mov cl, [si + 0]
@@ -81,6 +81,7 @@ update_player:
     jmp .return
   .move_right:
     sub ah, al
+    ; shrink left side
     mov ch, [si + 0]
     mov cl, ch
     add cl, ah
@@ -89,6 +90,7 @@ update_player:
     mov dh, 24
     call print_horizontal_line
     pop ax
+    ; extend right side
     mov ch, [si + 0]
     add ch, [si + 1]
     mov cl, ch
