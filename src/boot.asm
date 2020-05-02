@@ -16,8 +16,8 @@ start:
   mov di, ds ; set destination index pointer
 
   ; initialize game state
-  mov [di + 0], byte 0 ; player_left_x, relative to game arena
-  mov [di + 1], byte 10 ; player_size
+  mov [di + 0], byte 10 ; player_left_x, relative to game arena
+  mov [di + 1], byte 3 ; player_size
   mov [di + 2], byte 1 ; ball_x
   mov [di + 3], byte 1 ; ball_y
   mov [di + 4], byte 0 ; ball_x_carry
@@ -27,10 +27,83 @@ start:
   mov [di + 10], dword 0 ; system time in ticks
 
 call draw_walls
+call draw_initial_player
 game_loop:
   call read_time
   call update_ball
+  call read_keyboard
+  call update_player
   jmp game_loop
+
+draw_initial_player:
+  pusha
+  mov ch, [si + 0]
+  mov cl, [si + 0]
+  add cl, [si + 1]
+  mov al, 54h ; 'T'
+  mov dh, 24
+  call print_horizontal_line
+  popa
+  ret
+
+update_player:
+  pusha
+  cmp al, ah
+  jg .move_left
+  jl .move_right
+  je .return
+  ; mov al, 1
+  ; mov ah, 0
+  .move_left:
+    sub al, ah
+    ; erase right side
+    mov cl, [si + 0]
+    add cl, [si + 1]
+    dec cl
+    mov ch, cl
+    sub cl, al
+    push ax
+    mov al, 20h ; ' '
+    mov dh, 24
+    call print_horizontal_line
+    pop ax
+    ; draw left side
+    mov ch, [si + 0]
+    sub ch, al
+    mov cl, [si + 0]
+    push ax
+    mov al, 54h ; 'T'
+    mov dh, 24
+    call print_horizontal_line
+    pop ax
+    ; update game state
+    sub [di + 0], al
+    jmp .return
+  .move_right:
+    sub ah, al
+    mov ch, [si + 0]
+    mov cl, ch
+    add cl, ah
+    push ax
+    mov al, 20h ; ' '
+    mov dh, 24
+    call print_horizontal_line
+    pop ax
+    mov ch, [si + 0]
+    add ch, [si + 1]
+    mov cl, ch
+    add cl, ah
+    push ax
+    mov al, 54h ; 'T'
+    mov dh, 24
+    call print_horizontal_line
+    pop ax
+    ; update game state
+    add [di + 0], ah
+    jmp .return
+  .return:
+    popa
+    ret
 
 ; updates the game state for the ball
 ; dx = ticks (assumes cx set by read_time is zero)
@@ -121,24 +194,28 @@ update_ball:
 ;   al = number of key presses on left arrow
 ;   ah = number of key presses on right arrow
 read_keyboard:
-  mov ax, 0
-  mov ah, 01h
-  int 16h
-  jz .return
-  mov ah, 00h
-  int 16h
-  cmp ah, 4bh
-  je .left_requested
-  cmp ah, 4dh
-  je .right_requested
-  jmp read_keyboard
+  push bx
+  mov bx, 0
+  .read_next_key:
+    mov ah, 01h
+    int 16h
+    jz .return
+    mov ah, 00h
+    int 16h
+    cmp ah, 4bh
+    je .left_requested
+    cmp ah, 4dh
+    je .right_requested
+    jmp .read_next_key
   .left_requested:
-    add al, 1
-    jmp read_keyboard
+    inc bl
+    jmp .read_next_key
   .right_requested:
-    add ah, 1
-    jmp read_keyboard
+    inc bh
+    jmp .read_next_key
   .return:
+    mov ax, bx
+    pop bx
     ret
 
 ; updates the game state to the current time
@@ -211,22 +288,24 @@ read_time:
 ;   .done:
 ;     ret
 
-; ; draws player between x1=ch and x2=cl
-; .draw_player:
-;   mov dh, 24 ; drawing on the bottom line
+; draws player between x1=ch and x2=cl
+draw_player:
+  pusha
+  mov dh, 24 ; drawing on the bottom line
 
-;   ; reset all potential player cells to blank
-;   push cx
-;   mov al, 20h ; ' '
-;   mov ch, 1
-;   mov cl, 60
-;   call .print_horizontal_line
+  ; reset all potential player cells to blank
+  push cx
+  mov al, 20h ; ' '
+  mov ch, 1
+  mov cl, 60
+  call print_horizontal_line
 
-;   ; actually draw player
-;   pop cx
-;   mov al, 54h ; 'T'
-;   call .print_horizontal_line
-;   ret
+  ; actually draw player
+  pop cx
+  mov al, 54h ; 'T'
+  call print_horizontal_line
+  popa
+  ret
 
 draw_walls:
   pusha
@@ -264,7 +343,7 @@ draw_right_wall:
   popa
   ret
 
-; prints horizontal line of char=al at y=dh from x1=ch to x2=cl
+; prints horizontal line of char=al at y=dh from x1=ch to x2=cl exclusive
 print_horizontal_line:
   pusha
   mov dl, ch
@@ -276,7 +355,7 @@ print_horizontal_line:
   popa
   ret
 
-; prints vertical line of char=al at x=dl from y1=ch to y2=cl
+; prints vertical line of char=al at x=dl from y1=ch to y2=cl exclusive
 print_vertical_line:
   pusha
   mov dh, ch
