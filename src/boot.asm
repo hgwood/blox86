@@ -116,17 +116,6 @@ update_ball:
     popa
     ret
 
-; draws a char at the position of the ball in the current game state
-; al = char
-; bl = color
-draw_ball:
-  pusha
-  mov dl, [si + 2]
-  mov dh, [si + 3]
-  call print_char_at
-  popa
-  ret
-
 ; reads keyboard buffer until exhaustion
 ; returns
 ;   al = number of key presses on left arrow
