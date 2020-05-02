@@ -260,32 +260,17 @@ read_time:
 draw_walls:
   pusha
   mov al, 58h ; 'X'
-  call draw_upper_wall
-  call draw_left_wall
-  call draw_right_wall
-  popa
-  ret
-
-draw_upper_wall:
-  pusha
+  ; upper wall
   mov dh, 0
   mov ch, 0
   mov cl, 60
   call print_horizontal_line
-  popa
-  ret
-
-draw_left_wall:
-  pusha
+  ; left wall
   mov dl, 0
   mov ch, 0
   mov cl, 25
   call print_vertical_line
-  popa
-  ret
-
-draw_right_wall:
-  pusha
+  ; right wall
   mov dl, 60
   mov ch, 0
   mov cl, 25
