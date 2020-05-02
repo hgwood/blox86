@@ -56,6 +56,15 @@ update_player:
   ; mov ah, 0
   .move_left:
     sub al, ah
+    ; extend left side
+    mov ch, [si + 0]
+    sub ch, al
+    mov cl, [si + 0]
+    push ax
+    mov al, 54h ; 'T'
+    mov dh, 24
+    call print_horizontal_line
+    pop ax
     ; shrink right side
     mov cl, [si + 0]
     add cl, [si + 1]
@@ -67,29 +76,11 @@ update_player:
     mov dh, 24
     call print_horizontal_line
     pop ax
-    ; extend left side
-    mov ch, [si + 0]
-    sub ch, al
-    mov cl, [si + 0]
-    push ax
-    mov al, 54h ; 'T'
-    mov dh, 24
-    call print_horizontal_line
-    pop ax
     ; update game state
     sub [di + 0], al
     jmp .return
   .move_right:
     sub ah, al
-    ; shrink left side
-    mov ch, [si + 0]
-    mov cl, ch
-    add cl, ah
-    push ax
-    mov al, 20h ; ' '
-    mov dh, 24
-    call print_horizontal_line
-    pop ax
     ; extend right side
     mov ch, [si + 0]
     add ch, [si + 1]
@@ -97,6 +88,15 @@ update_player:
     add cl, ah
     push ax
     mov al, 54h ; 'T'
+    mov dh, 24
+    call print_horizontal_line
+    pop ax
+    ; shrink left side
+    mov ch, [si + 0]
+    mov cl, ch
+    add cl, ah
+    push ax
+    mov al, 20h ; ' '
     mov dh, 24
     call print_horizontal_line
     pop ax
