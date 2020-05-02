@@ -247,66 +247,6 @@ read_time:
   pop ax
   ret
 
-
-; old code
-;   call .draw_walls
-;   mov ch, 10
-;   mov cl, 20
-;   call .draw_player
-;   .game_loop:
-;     push cx
-;     call .update_player_position
-;     pop dx
-;     cmp dx, cx
-;     je .game_loop
-;     call .draw_player
-;     jmp .game_loop
-
-; .update_player_position:
-;   mov ah, 01h
-;   int 16h
-;   jz .done
-;   mov ah, 00h
-;   int 16h
-;   cmp ah, 4bh
-;   je .move_player_left_if_possible
-;   cmp ah, 4dh
-;   je .move_player_right_if_possible
-;   jmp .done
-;   .move_player_left_if_possible:
-;     cmp ch, 1
-;     je .done
-;     sub ch, 1
-;     sub cl, 1
-;     jmp .done
-;   .move_player_right_if_possible:
-;     cmp cl, 60
-;     je .done
-;     add ch, 1
-;     add cl, 1
-;     jmp .done
-;   .done:
-;     ret
-
-; draws player between x1=ch and x2=cl
-draw_player:
-  pusha
-  mov dh, 24 ; drawing on the bottom line
-
-  ; reset all potential player cells to blank
-  push cx
-  mov al, 20h ; ' '
-  mov ch, 1
-  mov cl, 60
-  call print_horizontal_line
-
-  ; actually draw player
-  pop cx
-  mov al, 54h ; 'T'
-  call print_horizontal_line
-  popa
-  ret
-
 draw_walls:
   pusha
   mov al, 58h ; 'X'
