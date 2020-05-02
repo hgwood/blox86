@@ -24,6 +24,7 @@ start:
   mov [di + 5], byte 0 ; ball_y_carry
   mov [di + 6], byte 1 ; ball_speed_x, in ticks per unit
   mov [di + 7], byte 1 ; ball_speed_y, in ticks per unit
+  mov [di + 8], byte 0 ; game over flag
   mov [di + 10], dword 0 ; system time in ticks
 
 call draw_walls
@@ -33,7 +34,15 @@ game_loop:
   call update_ball
   call read_keyboard
   call update_player
+  cmp byte [di + 8], 1
+  je game_over
   jmp game_loop
+
+game_over:
+  mov dx, 0
+  mov al, 47h ; 'G'
+  call print_char_at
+  jmp $ ; infinite loop
 
 draw_initial_player:
   pusha
@@ -181,15 +190,17 @@ update_ball:
       jmp .return
     .maybe_player_hit:
       pop cx ; pop previous position
-      push cx ; push it back immediatly .no_hit and .vertical_wall_hit need it
+      push cx ; push back previous position because .ball_lost and .vertical_wall_hit expects it
       cmp cl, byte [si + 0] ; compare ball x with player left x
-      jl .no_hit ; ball is left of player
+      jl .ball_lost ; ball is left of player
       ; compute player right x
       mov ch, byte [si + 0]
       add ch, byte [si + 1]
       cmp cl, ch ; compare ball x with player right x
-      jge .no_hit ; ball is right of player
+      jge .ball_lost ; ball is right of player
       jmp .vertical_wall_hit ; player hit is same as vertical wall hit
+    .ball_lost:
+      mov byte [di + 8], 1
     .no_hit:
     ; set carry for next update
     mov byte [di + 5], ah
