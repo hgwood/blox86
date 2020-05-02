@@ -22,46 +22,50 @@ start:
   mov [di + 3], byte 0 ; ball_y
   mov [di + 4], word 0 ; ball_x_carry
   mov [di + 6], word 0 ; ball_y_carry
-  mov [di + 8], byte 40 ; ball_speed_x, in ticks per unit
+  mov [di + 8], byte 10 ; ball_speed_x, in ticks per unit
   mov [di + 9], byte 20 ; ball_speed_y, in ticks per unit
   mov [di + 10], dword 0 ; system time in ticks
 
 game_loop:
   call read_time
   call update_ball
-  ; call draw_ball
   jmp game_loop
 
 ; updates the game state for the ball
 ; dx = ticks (assumes cx set by read_time is zero)
 update_ball:
   pusha
-  .erase:
-    mov al, 20h ; ' '
-    call draw_ball
+  push word [si + 2] ; save previous position for comparison at the end
   .update_x:
     cmp byte [si + 8], 0
     je .update_y
     mov ax, dx
     add ax, word [si + 4]
     div byte [si + 8]
-    add byte [si + 2], al
+    add byte [di + 2], al
     mov al, ah
     mov ah, 0
-    mov word [si + 4], ax
+    mov word [di + 4], ax
   .update_y:
     cmp byte [si + 9], 0
     je .draw
     mov ax, dx
     add ax, word [si + 6]
     div byte [si + 9]
-    add byte [si + 3], al
+    add byte [di + 3], al
     mov al, ah
     mov ah, 0
-    mov word [si + 6], ax
+    mov word [di + 6], ax
   .draw:
-    mov al, 4fh ; '0'
-    call draw_ball
+    pop dx
+    cmp dx, word [si + 2]
+    je .return
+    mov al, 20h ; ' '
+    ; position already in dx, ready to print
+    call print_char_at
+    mov al, 4fh ; 'O'
+    mov dx, word [si + 2]
+    call print_char_at
   .return:
     popa
     ret
