@@ -17,7 +17,7 @@ start:
 
   ; initialize game state
   mov [di + 0], byte 10 ; player_left_x, relative to game arena
-  mov [di + 1], byte 3 ; player_size
+  mov [di + 1], byte 20 ; player_size
   mov [di + 2], byte 1 ; ball_x
   mov [di + 3], byte 1 ; ball_y
   mov [di + 4], byte 0 ; ball_x_carry
@@ -60,6 +60,10 @@ update_player:
     mov ch, [si + 0]
     sub ch, al
     mov cl, [si + 0]
+    ; check boundary
+    cmp ch, 0
+    jle .return
+    ; draw
     push ax
     mov al, 54h ; 'T'
     mov dh, 24
@@ -86,6 +90,10 @@ update_player:
     add ch, [si + 1]
     mov cl, ch
     add cl, ah
+    ; check boundary
+    cmp cl, 60
+    jg .return
+    ; draw
     push ax
     mov al, 54h ; 'T'
     mov dh, 24
