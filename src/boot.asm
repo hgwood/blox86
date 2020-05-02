@@ -20,10 +20,10 @@ start:
   mov [di + 1], byte 10 ; player_size
   mov [di + 2], byte 0 ; ball_x
   mov [di + 3], byte 0 ; ball_y
-  mov [di + 4], word 0 ; ball_x_carry
-  mov [di + 6], word 0 ; ball_y_carry
-  mov [di + 8], byte 10 ; ball_speed_x, in ticks per unit
-  mov [di + 9], byte 20 ; ball_speed_y, in ticks per unit
+  mov [di + 4], byte 0 ; ball_x_carry
+  mov [di + 5], byte 0 ; ball_y_carry
+  mov [di + 6], byte 10 ; ball_speed_x, in ticks per unit
+  mov [di + 7], byte 20 ; ball_speed_y, in ticks per unit
   mov [di + 10], dword 0 ; system time in ticks
 
 game_loop:
@@ -37,25 +37,25 @@ update_ball:
   pusha
   push word [si + 2] ; save previous position for comparison at the end
   .update_x:
-    cmp byte [si + 8], 0
+    cmp byte [si + 6], 0
     je .update_y
+    mov bl, [si + 4]
+    mov bh, 0
     mov ax, dx
-    add ax, word [si + 4]
-    div byte [si + 8]
+    add ax, bx
+    div byte [si + 6]
     add byte [di + 2], al
-    mov al, ah
-    mov ah, 0
-    mov word [di + 4], ax
+    mov byte [di + 4], ah
   .update_y:
-    cmp byte [si + 9], 0
+    cmp byte [si + 7], 0
     je .draw
+    mov bl, [si + 5]
+    mov bh, 0
     mov ax, dx
-    add ax, word [si + 6]
-    div byte [si + 9]
+    add ax, bx
+    div byte [si + 7]
     add byte [di + 3], al
-    mov al, ah
-    mov ah, 0
-    mov word [di + 6], ax
+    mov byte [di + 5], ah
   .draw:
     pop dx
     cmp dx, word [si + 2]
