@@ -110,11 +110,10 @@ update_player:
     call print_horizontal_line
     pop ax
     ; shrink right side
-    mov cl, [si + player_left_x_offset]
-    add cl, [si + player_size_offset]
-    dec cl
-    mov ch, cl
-    sub cl, al
+    mov ch, [si + player_left_x_offset]
+    add ch, [si + player_size_offset]
+    mov cl, ch
+    sub ch, al
     push ax
     mov al, empty_char
     mov dh, player_y
