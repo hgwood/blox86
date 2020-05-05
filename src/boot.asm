@@ -15,7 +15,7 @@ start:
   mov si, ds ; set source index pointer
   mov di, ds ; set destination index pointer
 
-  ; constants
+  ; constant positions
   %assign arena_width 64
   %assign arena_height 24
   %assign left_wall_x 0
@@ -25,22 +25,37 @@ start:
   %assign player_y top_wall_y + arena_height
   %assign arena_bottom player_y + 1
 
+  ; character constants
   %assign wall_char 58h ; 'X'
   %assign player_char 54h ; 'T'
   %assign ball_char 4fh ; 'O
   %assign empty_char 20h ; ' '
 
+  ; game state offsets
+  %assign player_left_x_offset 0
+  %assign player_size_offset 1
+  %assign ball_x_offset 2
+  %assign ball_y_offset 3
+  %assign ball_x_carry_offset 4
+  %assign ball_y_carry_offset 5
+  %assign ball_speed_x_offset 6
+  %assign ball_speed_y_offset 7
+  %assign game_over_flag_offset 8
+  %assign system_time_offset 10
+  %assign system_time_lsw_offset system_time_offset
+  %assign system_time_msw_offset system_time_offset + 2
+
   ; initialize game state
-  mov [di + 0], byte 10 ; player_left_x, relative to game arena
-  mov [di + 1], byte 20 ; player_size
-  mov [di + 2], byte 1 ; ball_x
-  mov [di + 3], byte 1 ; ball_y
-  mov [di + 4], byte 0 ; ball_x_carry
-  mov [di + 5], byte 0 ; ball_y_carry
-  mov [di + 6], byte 1 ; ball_speed_x, in ticks per unit
-  mov [di + 7], byte 1 ; ball_speed_y, in ticks per unit
-  mov [di + 8], byte 0 ; game over flag
-  mov [di + 10], dword 0 ; system time in ticks
+  mov [di + player_left_x_offset], byte 10 ; absolute coordinate
+  mov [di + player_size_offset], byte 20 ; absolute coordinate
+  mov [di + ball_x_offset], byte 1 ; absolute coordinate
+  mov [di + ball_y_offset], byte 1 ; absolute coordinate
+  mov [di + ball_x_carry_offset], byte 0 ; in ticks
+  mov [di + ball_y_carry_offset], byte 0 ; in ticks
+  mov [di + ball_speed_x_offset], byte 1 ; in ticks per unit
+  mov [di + ball_speed_y_offset], byte 1 ; in ticks per unit
+  mov [di + game_over_flag_offset], byte 0 ; boolean
+  mov [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
 
 call draw_walls
 call draw_initial_player
@@ -49,7 +64,7 @@ game_loop:
   call update_ball
   call read_keyboard
   call update_player
-  cmp byte [di + 8], 1
+  cmp byte [di + game_over_flag_offset], 1
   je game_over
   jmp game_loop
 
@@ -61,9 +76,9 @@ game_over:
 
 draw_initial_player:
   pusha
-  mov ch, [si + 0]
-  mov cl, [si + 0]
-  add cl, [si + 1]
+  mov ch, [si + player_left_x_offset]
+  mov cl, [si + player_left_x_offset]
+  add cl, [si + player_size_offset]
   mov al, player_char
   mov dh, player_y
   call print_horizontal_line
@@ -79,9 +94,9 @@ update_player:
   .move_left:
     sub al, ah
     ; extend left side
-    mov ch, [si + 0]
+    mov ch, [si + player_left_x_offset]
     sub ch, al
-    mov cl, [si + 0]
+    mov cl, [si + player_left_x_offset]
     ; check boundary
     cmp ch, 0
     jle .return
@@ -92,8 +107,8 @@ update_player:
     call print_horizontal_line
     pop ax
     ; shrink right side
-    mov cl, [si + 0]
-    add cl, [si + 1]
+    mov cl, [si + player_left_x_offset]
+    add cl, [si + player_size_offset]
     dec cl
     mov ch, cl
     sub cl, al
@@ -103,13 +118,13 @@ update_player:
     call print_horizontal_line
     pop ax
     ; update game state
-    sub [di + 0], al
+    sub [di + player_left_x_offset], al
     jmp .return
   .move_right:
     sub ah, al
     ; extend right side
-    mov ch, [si + 0]
-    add ch, [si + 1]
+    mov ch, [si + player_left_x_offset]
+    add ch, [si + player_size_offset]
     mov cl, ch
     add cl, ah
     ; check boundary
@@ -122,7 +137,7 @@ update_player:
     call print_horizontal_line
     pop ax
     ; shrink left side
-    mov ch, [si + 0]
+    mov ch, [si + player_left_x_offset]
     mov cl, ch
     add cl, ah
     push ax
@@ -131,7 +146,7 @@ update_player:
     call print_horizontal_line
     pop ax
     ; update game state
-    add [di + 0], ah
+    add [di + player_left_x_offset], ah
     jmp .return
   .return:
     popa
@@ -142,87 +157,87 @@ update_player:
 update_ball:
   pusha
   ; save previous position on the stack
-  push word [si + 2]
+  push word [si + ball_x_offset]
   .update_x:
     ; skip if speed is zero
-    cmp byte [si + 6], 0
+    cmp byte [si + ball_speed_x_offset], 0
     je .end_update_x
     ; expand carry to word and into bx so it can be added to ticks
-    mov bl, [si + 4]
+    mov bl, [si + ball_x_carry_offset]
     mov bh, 0
     ; add carry to ticks, result in ax
     mov ax, dx
     add ax, bx
     ; divide by speed, result in ax
-    idiv byte [si + 6]
+    idiv byte [si + ball_speed_x_offset]
     ; update position
-    add byte [di + 2], al
+    add byte [di + ball_x_offset], al
     ; handle wall collisions
-    cmp byte [si + 2], 0
+    cmp byte [si + ball_x_offset], 0
     je .horizontal_wall_hit
-    cmp byte [si + 2], right_wall_x
+    cmp byte [si + ball_x_offset], right_wall_x
     je .horizontal_wall_hit
     jne .no_horizontal_wall_hit
     .horizontal_wall_hit:
       ; negate speed
-      neg byte [di + 6]
+      neg byte [di + ball_speed_x_offset]
       ; reset position and clean up the stack before recursive call
-      pop word [di + 2]
+      pop word [di + ball_x_offset]
       call update_ball
       jmp .return
     .no_horizontal_wall_hit:
     ; set carry for next update
-    mov byte [di + 4], ah
+    mov byte [di + ball_x_carry_offset], ah
   .end_update_x:
   .update_y:
     ; skip if speed is zero
-    cmp byte [si + 7], 0
+    cmp byte [si + ball_speed_y_offset], 0
     je .end_update_y
     ; expand carry to word and into bx so it can be added to ticks
-    mov bl, [si + 5]
+    mov bl, [si + ball_y_carry_offset]
     mov bh, 0
     ; add carry to ticks, result in ax
     mov ax, dx
     add ax, bx
     ; divide by speed, result in ax
-    idiv byte [si + 7]
+    idiv byte [si + ball_speed_y_offset]
     ; update position
-    add byte [di + 3], al
+    add byte [di + ball_y_offset], al
     ; handle wall collisions
-    cmp byte [si + 3], 0
+    cmp byte [si + ball_y_offset], 0
     je .vertical_wall_hit
-    cmp byte [si + 3], player_y
+    cmp byte [si + ball_y_offset], player_y
     je .maybe_player_hit
     jne .no_hit
     .vertical_wall_hit:
       ; negate speed
-      neg byte [di + 7]
+      neg byte [di + ball_speed_y_offset]
       ; reset position and clean up the stack before recursive call
-      pop word [di + 2]
+      pop word [di + ball_x_offset]
       call update_ball
       jmp .return
     .maybe_player_hit:
       pop cx ; pop previous position
       push cx ; push back previous position because .ball_lost and .vertical_wall_hit expects it
-      cmp cl, byte [si + 0] ; compare ball x with player left x
+      cmp cl, byte [si + player_left_x_offset] ; compare ball x with player left x
       jl .ball_lost ; ball is left of player
       ; compute player right x
-      mov ch, byte [si + 0]
-      add ch, byte [si + 1]
+      mov ch, byte [si + player_left_x_offset]
+      add ch, byte [si + player_size_offset]
       cmp cl, ch ; compare ball x with player right x
       jge .ball_lost ; ball is right of player
       jmp .vertical_wall_hit ; player hit is same as vertical wall hit
     .ball_lost:
-      mov byte [di + 8], 1
+      mov byte [di + game_over_flag_offset], 1
     .no_hit:
     ; set carry for next update
-    mov byte [di + 5], ah
+    mov byte [di + ball_y_carry_offset], ah
   .end_update_y:
   .draw:
     ; pop previous position into dx
     pop dx
     ; skip draw if position has not changed
-    cmp dx, word [si + 2]
+    cmp dx, word [si + ball_x_offset]
     je .return
     ; erase previous ball
     mov al, empty_char
@@ -230,7 +245,7 @@ update_ball:
     call print_char_at
     ; draw new ball
     mov al, ball_char
-    mov dx, word [si + 2]
+    mov dx, word [si + ball_x_offset]
     call print_char_at
   .return:
     popa
@@ -279,16 +294,16 @@ read_time:
   mov bx, dx
   mov ax, cx
   ; compute delta
-  sub dx, [si + 10]
-  sbb cx, [si + 12]
+  sub dx, word [si + system_time_lsw_offset]
+  sbb cx, word [si + system_time_msw_offset]
   ; return delta zero if game state has clock zero
   cmp dword [si + 10], 0
   jne .update_game_state
   mov cx, 0
   mov dx, 0
   .update_game_state:
-    mov [di + 10], bx
-    mov [di + 12], ax
+    mov word [di + system_time_lsw_offset], bx
+    mov word [di + system_time_msw_offset], ax
   ; restore non-return registers
   pop bx
   pop ax
