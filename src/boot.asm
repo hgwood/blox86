@@ -31,6 +31,9 @@ start:
   %assign ball_char 4fh ; 'O
   %assign empty_char 20h ; ' '
 
+  ; gameplay constants
+  %assign player_speed_multiplier 2
+
   ; game state offsets
   %assign player_left_x_offset 0
   %assign player_size_offset 1
@@ -270,10 +273,10 @@ read_keyboard:
     je .right_requested
     jmp .read_next_key
   .left_requested:
-    inc bl
+    add bl, player_speed_multiplier
     jmp .read_next_key
   .right_requested:
-    inc bh
+    add bh, player_speed_multiplier
     jmp .read_next_key
   .return:
     mov ax, bx
