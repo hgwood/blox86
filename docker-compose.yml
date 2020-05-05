@@ -5,4 +5,4 @@ services:
     volumes:
       - ./:/work
     working_dir: /work
-    command: build.sh
+    command: sh build.sh

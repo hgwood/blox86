@@ -1,5 +1,3 @@
-FROM debian
+FROM alpine
 
-RUN apt-get update && apt-get install -y nasm genisoimage
-
-ENTRYPOINT [ "sh" ]
+RUN apk add cdrkit nasm
