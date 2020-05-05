@@ -219,8 +219,7 @@ update_ball:
       call update_ball
       jmp .return
     .maybe_player_hit:
-      pop cx ; pop previous position
-      push cx ; push back previous position because .ball_lost and .vertical_wall_hit expects it
+      mov cl, byte [si + ball_x_offset]
       cmp cl, byte [si + player_left_x_offset] ; compare ball x with player left x
       jl .ball_lost ; ball is left of player
       ; compute player right x
