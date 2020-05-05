@@ -15,6 +15,21 @@ start:
   mov si, ds ; set source index pointer
   mov di, ds ; set destination index pointer
 
+  ; constants
+  %assign arena_width 64
+  %assign arena_height 24
+  %assign left_wall_x 0
+  %assign top_wall_y 0
+  %assign right_wall_x left_wall_x + arena_width + 1
+  %assign arena_left left_wall_x + 1
+  %assign player_y top_wall_y + arena_height
+  %assign arena_bottom player_y + 1
+
+  %assign wall_char 58h ; 'X'
+  %assign player_char 54h ; 'T'
+  %assign ball_char 4fh ; 'O
+  %assign empty_char 20h ; ' '
+
   ; initialize game state
   mov [di + 0], byte 10 ; player_left_x, relative to game arena
   mov [di + 1], byte 20 ; player_size
@@ -49,8 +64,8 @@ draw_initial_player:
   mov ch, [si + 0]
   mov cl, [si + 0]
   add cl, [si + 1]
-  mov al, 54h ; 'T'
-  mov dh, 24
+  mov al, player_char
+  mov dh, player_y
   call print_horizontal_line
   popa
   ret
@@ -61,8 +76,6 @@ update_player:
   jg .move_left
   jl .move_right
   je .return
-  ; mov al, 1
-  ; mov ah, 0
   .move_left:
     sub al, ah
     ; extend left side
@@ -74,8 +87,8 @@ update_player:
     jle .return
     ; draw
     push ax
-    mov al, 54h ; 'T'
-    mov dh, 24
+    mov al, player_char
+    mov dh, player_y
     call print_horizontal_line
     pop ax
     ; shrink right side
@@ -85,8 +98,8 @@ update_player:
     mov ch, cl
     sub cl, al
     push ax
-    mov al, 20h ; ' '
-    mov dh, 24
+    mov al, empty_char
+    mov dh, player_y
     call print_horizontal_line
     pop ax
     ; update game state
@@ -100,12 +113,12 @@ update_player:
     mov cl, ch
     add cl, ah
     ; check boundary
-    cmp cl, 60
+    cmp cl, right_wall_x
     jg .return
     ; draw
     push ax
-    mov al, 54h ; 'T'
-    mov dh, 24
+    mov al, player_char
+    mov dh, player_y
     call print_horizontal_line
     pop ax
     ; shrink left side
@@ -113,8 +126,8 @@ update_player:
     mov cl, ch
     add cl, ah
     push ax
-    mov al, 20h ; ' '
-    mov dh, 24
+    mov al, empty_char
+    mov dh, player_y
     call print_horizontal_line
     pop ax
     ; update game state
@@ -147,7 +160,7 @@ update_ball:
     ; handle wall collisions
     cmp byte [si + 2], 0
     je .horizontal_wall_hit
-    cmp byte [si + 2], 60
+    cmp byte [si + 2], right_wall_x
     je .horizontal_wall_hit
     jne .no_horizontal_wall_hit
     .horizontal_wall_hit:
@@ -178,7 +191,7 @@ update_ball:
     ; handle wall collisions
     cmp byte [si + 3], 0
     je .vertical_wall_hit
-    cmp byte [si + 3], 24
+    cmp byte [si + 3], player_y
     je .maybe_player_hit
     jne .no_hit
     .vertical_wall_hit:
@@ -212,11 +225,11 @@ update_ball:
     cmp dx, word [si + 2]
     je .return
     ; erase previous ball
-    mov al, 20h ; ' '
+    mov al, empty_char
     ; position already in dx, ready to print
     call print_char_at
     ; draw new ball
-    mov al, 4fh ; 'O'
+    mov al, ball_char
     mov dx, word [si + 2]
     call print_char_at
   .return:
@@ -283,21 +296,21 @@ read_time:
 
 draw_walls:
   pusha
-  mov al, 58h ; 'X'
+  mov al, wall_char
   ; upper wall
-  mov dh, 0
-  mov ch, 0
-  mov cl, 60
+  mov dh, top_wall_y
+  mov ch, left_wall_x
+  mov cl, right_wall_x
   call print_horizontal_line
   ; left wall
-  mov dl, 0
-  mov ch, 0
-  mov cl, 25
+  mov dl, left_wall_x
+  mov ch, top_wall_y
+  mov cl, arena_bottom
   call print_vertical_line
   ; right wall
-  mov dl, 60
-  mov ch, 0
-  mov cl, 25
+  mov dl, right_wall_x
+  mov ch, top_wall_y
+  mov cl, arena_bottom
   call print_vertical_line
   popa
   ret
