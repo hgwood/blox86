@@ -1,7 +1,8 @@
 version: "3.7"
 services:
-  linux:
+  build:
     build: .
     volumes:
       - ./:/work
     working_dir: /work
+    command: build.sh
