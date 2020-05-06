@@ -417,4 +417,4 @@ print_char_at:
   popa
   ret
 
-dw 0xAA55		; The standard PC boot signature
+dw 0aa55h ; the standard PC boot signature
