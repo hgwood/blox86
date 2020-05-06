@@ -52,7 +52,6 @@ start:
   mov si, ds ; set source index pointer
   mov di, ds ; set destination index pointer
 
-
   ; initialize game state
   mov byte [di + player_left_x_offset], byte 10 ; absolute coordinate
   mov byte [di + player_size_offset], byte 20 ; absolute coordinate
@@ -64,9 +63,14 @@ start:
   mov byte [di + ball_speed_y_offset], byte 1 ; in ticks per unit
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
+  mov dword [di + level_bit_map_offset + 00], dword 1010_1010_1010_1010_1010_1010_1010_1010b
+  mov dword [di + level_bit_map_offset + 04], dword 0010_1010_1010_1010_1010_1010_1010_1010b
+  mov dword [di + level_bit_map_offset + 08], dword 0101_0101_0101_0101_0101_0101_0101_0100b
+  mov dword [di + level_bit_map_offset + 12], dword 0101_0101_0101_0101_0101_0101_0101_0101b
 
 call draw_walls
 call draw_initial_player
+call draw_level
 game_loop:
   call read_time
   call update_ball
@@ -92,6 +96,48 @@ draw_initial_player:
   call print_horizontal_line
   popa
   ret
+
+draw_level:
+  pusha
+  mov bx, 0 ; byte index
+  .byte_loop:
+    mov cl, 0 ; bit index
+    .bit_loop:
+      ; compute bit mask
+      mov ch, 1
+      sal ch, cl
+      ; apply mask
+      mov al, ch
+      and al, byte [si + level_bit_map_offset + bx]
+      cmp al, ch
+      jne .next_bit_loop
+      ; compute coordinates to draw
+      mov ax, bx
+      mov dl, arena_width_bytes
+      div dl
+      ; al = y
+      ; ah = x
+      sal ah, 3 ; shift 3 bits left (multiply by 8)
+      add ah, cl ; shift to current bit
+      inc ah ; shift to avoid left wall
+      inc al ; shift to avoid top wall
+      ; draw
+      mov dl, ah
+      mov dh, al
+      mov al, 48h ; 'H'
+      call print_char_at
+      .next_bit_loop:
+        inc cl
+        cmp cl, 8
+        je .next_byte_loop
+        jne .bit_loop
+    .next_byte_loop:
+      inc bx
+      cmp bx, level_size_bytes
+      jl .byte_loop
+  .return:
+    popa
+    ret
 
 update_player:
   pusha
