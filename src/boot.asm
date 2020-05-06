@@ -54,16 +54,16 @@ start:
 
 
   ; initialize game state
-  mov [di + player_left_x_offset], byte 10 ; absolute coordinate
-  mov [di + player_size_offset], byte 20 ; absolute coordinate
-  mov [di + ball_x_offset], byte 1 ; absolute coordinate
-  mov [di + ball_y_offset], byte 1 ; absolute coordinate
-  mov [di + ball_x_carry_offset], byte 0 ; in ticks
-  mov [di + ball_y_carry_offset], byte 0 ; in ticks
-  mov [di + ball_speed_x_offset], byte 1 ; in ticks per unit
-  mov [di + ball_speed_y_offset], byte 1 ; in ticks per unit
-  mov [di + game_over_flag_offset], byte 0 ; boolean
-  mov [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
+  mov byte [di + player_left_x_offset], byte 10 ; absolute coordinate
+  mov byte [di + player_size_offset], byte 20 ; absolute coordinate
+  mov byte [di + ball_x_offset], byte 1 ; absolute coordinate
+  mov byte [di + ball_y_offset], byte 1 ; absolute coordinate
+  mov byte [di + ball_x_carry_offset], byte 0 ; in ticks
+  mov byte [di + ball_y_carry_offset], byte 0 ; in ticks
+  mov byte [di + ball_speed_x_offset], byte 1 ; in ticks per unit
+  mov byte [di + ball_speed_y_offset], byte 1 ; in ticks per unit
+  mov byte [di + game_over_flag_offset], byte 0 ; boolean
+  mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
 
 call draw_walls
 call draw_initial_player
