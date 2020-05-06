@@ -30,7 +30,7 @@
 %assign system_time_offset 10
 %assign system_time_lsw_offset system_time_offset
 %assign system_time_msw_offset system_time_offset + 2
-%assign level_bit_map_offset 32
+%assign block_bit_map_offset 32
 
 %assign arena_width_bytes arena_width / 8
 %assign level_size_bytes arena_width_bytes * 2
@@ -63,10 +63,14 @@ start:
   mov byte [di + ball_speed_y_offset], byte 1 ; in ticks per unit
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
-  mov dword [di + level_bit_map_offset + 00], dword 1010_1010_1010_1010_1010_1010_1010_1010b
-  mov dword [di + level_bit_map_offset + 04], dword 0010_1010_1010_1010_1010_1010_1010_1010b
-  mov dword [di + level_bit_map_offset + 08], dword 0101_0101_0101_0101_0101_0101_0101_0100b
-  mov dword [di + level_bit_map_offset + 12], dword 0101_0101_0101_0101_0101_0101_0101_0101b
+  ; block bit map
+  ; there are 23 lines with 64 positions each where there can be blocks
+  ; => 46 32-bits integers (aka dwords) => 1 bit per block, if it's one there is block, if it's 0 there is block
+  ; not using 64 bits because it is not supported in 16 bits CPU mode
+  mov dword [di + block_bit_map_offset + 00], dword 1010_1010_1010_1010_1010_1010_1010_1010b
+  mov dword [di + block_bit_map_offset + 04], dword 0010_1010_1010_1010_1010_1010_1010_1010b
+  mov dword [di + block_bit_map_offset + 08], dword 0101_0101_0101_0101_0101_0101_0101_0100b
+  mov dword [di + block_bit_map_offset + 12], dword 0101_0101_0101_0101_0101_0101_0101_0101b
 
 call draw_walls
 call draw_initial_player
@@ -108,7 +112,7 @@ draw_level:
       sal ch, cl
       ; apply mask
       mov al, ch
-      and al, byte [si + level_bit_map_offset + bx]
+      and al, byte [si + block_bit_map_offset + bx]
       cmp al, ch
       jne .next_bit_loop
       ; compute coordinates to draw
