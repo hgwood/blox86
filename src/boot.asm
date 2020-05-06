@@ -257,7 +257,7 @@ update_ball:
     ; update position
     add byte [di + ball_y_offset], al
     ; handle wall collisions
-    cmp byte [si + ball_y_offset], 0
+    cmp byte [si + ball_y_offset], top_wall_y
     je .vertical_wall_hit
     cmp byte [si + ball_y_offset], player_y
     je .maybe_player_hit
