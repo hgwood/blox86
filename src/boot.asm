@@ -73,6 +73,7 @@ start:
   mov dword [di + block_bit_map_offset + 12], dword 0101_0101_0101_0101_0101_0101_0101_0101b
 
 call draw_walls
+call draw_initial_ball
 call draw_initial_player
 call draw_level
 game_loop:
@@ -98,6 +99,15 @@ draw_initial_player:
   mov al, player_char
   mov dh, player_y
   call print_horizontal_line
+  popa
+  ret
+
+draw_initial_ball:
+  pusha
+  mov dl, [si + ball_x_offset]
+  mov dh, [si + ball_y_offset]
+  mov al, ball_char
+  call print_char_at
   popa
   ret
 
