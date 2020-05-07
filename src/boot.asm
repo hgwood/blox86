@@ -30,10 +30,12 @@
 %assign system_time_offset 10
 %assign system_time_lsw_offset system_time_offset
 %assign system_time_msw_offset system_time_offset + 2
-%assign block_bit_map_offset 32
+%assign block_map_offset 32
 
-%assign arena_width_bytes arena_width / 8
-%assign level_size_bytes arena_width_bytes * 2
+%assign level_size_bytes 64
+
+; block operations
+%assign block_is_alive_mask 0000_0001b
 
 BITS 16
 
@@ -63,14 +65,71 @@ start:
   mov byte [di + ball_speed_y_offset], byte 1 ; in ticks per unit
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
-  ; block bit map
-  ; there are 23 lines with 64 positions each where there can be blocks
-  ; => 46 32-bits integers (aka dwords) => 1 bit per block, if it's one there is block, if it's 0 there is block
-  ; not using 64 bits because it is not supported in 16 bits CPU mode
-  mov dword [di + block_bit_map_offset + 00], dword 1010_1010_1010_1010_1010_1010_1010_1010b
-  mov dword [di + block_bit_map_offset + 04], dword 0010_1010_1010_1010_1010_1010_1010_1010b
-  mov dword [di + block_bit_map_offset + 08], dword 0101_0101_0101_0101_0101_0101_0101_0100b
-  mov dword [di + block_bit_map_offset + 12], dword 0101_0101_0101_0101_0101_0101_0101_0101b
+  ; block map
+  mov byte [di + block_map_offset + 00], byte 1
+  mov byte [di + block_map_offset + 01], byte 1
+  mov byte [di + block_map_offset + 02], byte 1
+  mov byte [di + block_map_offset + 03], byte 1
+  mov byte [di + block_map_offset + 04], byte 1
+  mov byte [di + block_map_offset + 05], byte 1
+  mov byte [di + block_map_offset + 06], byte 1
+  mov byte [di + block_map_offset + 07], byte 1
+  mov byte [di + block_map_offset + 08], byte 1
+  mov byte [di + block_map_offset + 09], byte 1
+  mov byte [di + block_map_offset + 10], byte 1
+  mov byte [di + block_map_offset + 11], byte 1
+  mov byte [di + block_map_offset + 12], byte 1
+  mov byte [di + block_map_offset + 13], byte 1
+  mov byte [di + block_map_offset + 14], byte 1
+  mov byte [di + block_map_offset + 15], byte 1
+  mov byte [di + block_map_offset + 16], byte 1
+  mov byte [di + block_map_offset + 17], byte 1
+  mov byte [di + block_map_offset + 18], byte 1
+  mov byte [di + block_map_offset + 19], byte 1
+  mov byte [di + block_map_offset + 20], byte 1
+  mov byte [di + block_map_offset + 21], byte 1
+  mov byte [di + block_map_offset + 22], byte 1
+  mov byte [di + block_map_offset + 23], byte 1
+  mov byte [di + block_map_offset + 24], byte 1
+  mov byte [di + block_map_offset + 25], byte 1
+  mov byte [di + block_map_offset + 26], byte 1
+  mov byte [di + block_map_offset + 27], byte 1
+  mov byte [di + block_map_offset + 28], byte 1
+  mov byte [di + block_map_offset + 29], byte 1
+  mov byte [di + block_map_offset + 30], byte 1
+  mov byte [di + block_map_offset + 31], byte 1
+  mov byte [di + block_map_offset + 32], byte 1
+  mov byte [di + block_map_offset + 33], byte 1
+  mov byte [di + block_map_offset + 34], byte 1
+  mov byte [di + block_map_offset + 35], byte 1
+  mov byte [di + block_map_offset + 36], byte 1
+  mov byte [di + block_map_offset + 37], byte 1
+  mov byte [di + block_map_offset + 38], byte 1
+  mov byte [di + block_map_offset + 39], byte 1
+  mov byte [di + block_map_offset + 40], byte 1
+  mov byte [di + block_map_offset + 41], byte 1
+  mov byte [di + block_map_offset + 42], byte 1
+  mov byte [di + block_map_offset + 43], byte 1
+  mov byte [di + block_map_offset + 44], byte 1
+  mov byte [di + block_map_offset + 45], byte 1
+  mov byte [di + block_map_offset + 46], byte 1
+  mov byte [di + block_map_offset + 47], byte 1
+  mov byte [di + block_map_offset + 48], byte 1
+  mov byte [di + block_map_offset + 49], byte 1
+  mov byte [di + block_map_offset + 50], byte 1
+  mov byte [di + block_map_offset + 51], byte 1
+  mov byte [di + block_map_offset + 52], byte 1
+  mov byte [di + block_map_offset + 53], byte 1
+  mov byte [di + block_map_offset + 54], byte 1
+  mov byte [di + block_map_offset + 55], byte 1
+  mov byte [di + block_map_offset + 56], byte 1
+  mov byte [di + block_map_offset + 57], byte 1
+  mov byte [di + block_map_offset + 58], byte 1
+  mov byte [di + block_map_offset + 59], byte 1
+  mov byte [di + block_map_offset + 60], byte 1
+  mov byte [di + block_map_offset + 61], byte 1
+  mov byte [di + block_map_offset + 62], byte 1
+  mov byte [di + block_map_offset + 63], byte 1
 
 call draw_walls
 call draw_initial_ball
@@ -113,42 +172,77 @@ draw_initial_ball:
 
 draw_level:
   pusha
-  mov bx, 0 ; byte index
+  mov bx, 0 ; block index
   .byte_loop:
-    mov cl, 0 ; bit index
-    .bit_loop:
-      ; compute bit mask
-      mov ch, 1
-      sal ch, cl
-      ; apply mask
-      mov al, ch
-      and al, byte [si + block_bit_map_offset + bx]
-      cmp al, ch
-      jne .next_bit_loop
-      ; compute coordinates to draw
-      mov ax, bx
-      mov dl, arena_width_bytes
-      div dl
-      ; al = y
-      ; ah = x
-      sal ah, 3 ; shift 3 bits left (multiply by 8)
-      add ah, cl ; shift to current bit
-      inc ah ; shift to avoid left wall
-      inc al ; shift to avoid top wall
-      ; draw
-      mov dl, ah
-      mov dh, al
-      mov al, 48h ; 'H'
-      call print_char_at
-      .next_bit_loop:
-        inc cl
-        cmp cl, 8
-        je .next_byte_loop
-        jne .bit_loop
-    .next_byte_loop:
+    mov al, block_is_alive_mask
+    and al, byte [si + block_map_offset + bx]
+    jz .next_byte
+    ; compute coordinates to draw
+    ; x = block_index % arena_width + 1
+    ; y = block_index // arena_width + 1
+    mov ax, bx
+    mov dl, arena_width
+    div dl ; al = block_index // arena_width, ah = block_index % arena_width
+    inc al
+    inc ah
+    ; draw
+    mov dl, ah
+    mov dh, al
+    mov al, 48h ; 'H'
+    call print_char_at
+    .next_byte:
       inc bx
       cmp bx, level_size_bytes
       jl .byte_loop
+  .return:
+    popa
+    ret
+
+; converts game coordinates to block index to lookup the block map
+; computations is as follows:
+;   block index = (y - 1) * arena_width + (x - 1)
+; parameters
+;   al = x
+;   ah = y
+; returns
+;   ax = block index
+convert_to_block_index:
+  push bx
+  push cx
+  mov bx, ax
+  mov ax, 0
+  mov al, bh ; al = y
+  sub al, 1 ; al = y - 1
+  mov cl, arena_width
+  mul cl ; ax = (y - 1) * arena_width
+  mov bh, 0
+  add ax, bx ; ax = (y - 1) * arena_width + x
+  dec ax ; ax = (y - 1) * arena_width + x - 1
+  pop cx
+  pop bx
+  ret
+
+; destroys block at given position if one exists
+; parameters
+;   al = x
+;   ah = y
+; returns
+;   zero-flag set if no block
+;   zero-flag cleared if block was destroyed
+destroy_block_if_exists:
+  pusha
+  mov dx, ax ; save position in dx so we can draw at the end if block was destroyed
+  call convert_to_block_index
+  mov bx, ax ; bx is the only register supported as memory offset so we move block index to it
+  mov cl, block_is_alive_mask
+  and cl, [si + block_map_offset + bx]
+  jz .return ; no block at position
+  pushf ; save zf flag because it's the one we want to return and xor might change it
+  xor [si + block_map_offset + bx], cl ; remove block from bit map
+  ; draw
+  mov al, empty_char
+  call print_char_at
+  popf ; restore zf
   .return:
     popa
     ret
@@ -253,6 +347,12 @@ update_ball:
       call update_ball
       jmp .return
     .no_horizontal_wall_hit:
+    ; handle block collision
+    push ax
+    mov ax, word [si + ball_x_offset]
+    call destroy_block_if_exists
+    pop ax
+    jnz .horizontal_wall_hit
     ; set carry for next update
     mov byte [di + ball_x_carry_offset], ah
   .end_update_x:
@@ -295,7 +395,14 @@ update_ball:
       jmp .vertical_wall_hit ; player hit is same as vertical wall hit
     .ball_lost:
       mov byte [di + game_over_flag_offset], 1
+      jmp .end_update_y
     .no_hit:
+    ; handle block collision
+    push ax
+    mov ax, word [si + ball_x_offset]
+    call destroy_block_if_exists
+    pop ax
+    jnz .vertical_wall_hit
     ; set carry for next update
     mov byte [di + ball_y_carry_offset], ah
   .end_update_y:
