@@ -8,10 +8,10 @@
 %assign player_y top_wall_y + arena_height
 %assign arena_bottom player_y + 1
 %assign score_display_left_x 68
-%assign score_display_y 1
+%assign score_display_y 2
 %assign score_display_width 5
 %assign game_over_display_left_x 68
-%assign game_over_display_y 3
+%assign game_over_display_y 4
 
 ; character constants
 %assign wall_char 58h ; 'X'
