@@ -15,3 +15,7 @@ It was made as an entry to a small contest organized by my co-workers. I learned
 
 - Left/right arrow: move
 - Space: pause
+
+## Tweaking gameplay
+
+Edit `src/constants.asm` to change how the game behaves.
