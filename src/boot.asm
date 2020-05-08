@@ -178,10 +178,10 @@ destroy_block_if_exists:
   call convert_to_block_index
   mov bx, ax ; bx is the only register supported as memory offset so we move block index to it
   mov cl, block_is_alive_mask
-  and cl, [si + block_map_offset + bx]
+  and cl, byte [si + block_map_offset + bx]
   jz .return ; no block at position
   pushf ; save zf flag because it's the one we want to return and xor might change it
-  xor [si + block_map_offset + bx], cl ; remove block from bit map
+  xor byte [si + block_map_offset + bx], cl ; remove block from bit map
   ; draw
   mov al, empty_char
   call print_char_at
