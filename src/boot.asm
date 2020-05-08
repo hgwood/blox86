@@ -66,70 +66,7 @@ start:
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
   ; block map
-  mov byte [di + block_map_offset + 00], byte 1
-  mov byte [di + block_map_offset + 01], byte 1
-  mov byte [di + block_map_offset + 02], byte 1
-  mov byte [di + block_map_offset + 03], byte 1
-  mov byte [di + block_map_offset + 04], byte 1
-  mov byte [di + block_map_offset + 05], byte 1
-  mov byte [di + block_map_offset + 06], byte 1
-  mov byte [di + block_map_offset + 07], byte 1
-  mov byte [di + block_map_offset + 08], byte 1
-  mov byte [di + block_map_offset + 09], byte 1
-  mov byte [di + block_map_offset + 10], byte 1
-  mov byte [di + block_map_offset + 11], byte 1
-  mov byte [di + block_map_offset + 12], byte 1
-  mov byte [di + block_map_offset + 13], byte 1
-  mov byte [di + block_map_offset + 14], byte 1
-  mov byte [di + block_map_offset + 15], byte 1
-  mov byte [di + block_map_offset + 16], byte 1
-  mov byte [di + block_map_offset + 17], byte 1
-  mov byte [di + block_map_offset + 18], byte 1
-  mov byte [di + block_map_offset + 19], byte 1
-  mov byte [di + block_map_offset + 20], byte 1
-  mov byte [di + block_map_offset + 21], byte 1
-  mov byte [di + block_map_offset + 22], byte 1
-  mov byte [di + block_map_offset + 23], byte 1
-  mov byte [di + block_map_offset + 24], byte 1
-  mov byte [di + block_map_offset + 25], byte 1
-  mov byte [di + block_map_offset + 26], byte 1
-  mov byte [di + block_map_offset + 27], byte 1
-  mov byte [di + block_map_offset + 28], byte 1
-  mov byte [di + block_map_offset + 29], byte 1
-  mov byte [di + block_map_offset + 30], byte 1
-  mov byte [di + block_map_offset + 31], byte 1
-  mov byte [di + block_map_offset + 32], byte 1
-  mov byte [di + block_map_offset + 33], byte 1
-  mov byte [di + block_map_offset + 34], byte 1
-  mov byte [di + block_map_offset + 35], byte 1
-  mov byte [di + block_map_offset + 36], byte 1
-  mov byte [di + block_map_offset + 37], byte 1
-  mov byte [di + block_map_offset + 38], byte 1
-  mov byte [di + block_map_offset + 39], byte 1
-  mov byte [di + block_map_offset + 40], byte 1
-  mov byte [di + block_map_offset + 41], byte 1
-  mov byte [di + block_map_offset + 42], byte 1
-  mov byte [di + block_map_offset + 43], byte 1
-  mov byte [di + block_map_offset + 44], byte 1
-  mov byte [di + block_map_offset + 45], byte 1
-  mov byte [di + block_map_offset + 46], byte 1
-  mov byte [di + block_map_offset + 47], byte 1
-  mov byte [di + block_map_offset + 48], byte 1
-  mov byte [di + block_map_offset + 49], byte 1
-  mov byte [di + block_map_offset + 50], byte 1
-  mov byte [di + block_map_offset + 51], byte 1
-  mov byte [di + block_map_offset + 52], byte 1
-  mov byte [di + block_map_offset + 53], byte 1
-  mov byte [di + block_map_offset + 54], byte 1
-  mov byte [di + block_map_offset + 55], byte 1
-  mov byte [di + block_map_offset + 56], byte 1
-  mov byte [di + block_map_offset + 57], byte 1
-  mov byte [di + block_map_offset + 58], byte 1
-  mov byte [di + block_map_offset + 59], byte 1
-  mov byte [di + block_map_offset + 60], byte 1
-  mov byte [di + block_map_offset + 61], byte 1
-  mov byte [di + block_map_offset + 62], byte 1
-  mov byte [di + block_map_offset + 63], byte 1
+  %include "src/level.asm"
 
 call draw_walls
 call draw_initial_ball
