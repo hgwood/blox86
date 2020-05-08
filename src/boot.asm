@@ -7,6 +7,9 @@
 %assign arena_left left_wall_x + 1
 %assign player_y top_wall_y + arena_height
 %assign arena_bottom player_y + 1
+%assign score_display_x 79
+%assign score_display_y 1
+%assign score_display_width 5
 
 ; character constants
 %assign wall_char 58h ; 'X'
@@ -21,6 +24,7 @@
 %assign initial_ball_y 10
 %assign initial_ball_speed_x 1
 %assign initial_ball_speed_y 1
+%assign initial_score 0
 %assign player_speed_multiplier 4
 
 ; game state offsets
@@ -36,6 +40,8 @@
 %assign system_time_offset 10
 %assign system_time_lsw_offset system_time_offset
 %assign system_time_msw_offset system_time_offset + 2
+%assign score_offset system_time_msw_offset + 2
+%assign score_carry_offset score_offset + 2
 %assign block_map_offset 32
 
 %assign level_size_bytes 64
@@ -71,18 +77,24 @@ start:
   mov byte [di + ball_speed_y_offset], byte initial_ball_speed_y ; in ticks per unit: 1 is fastest, greater is slower
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
+  mov word [di + score_offset], word initial_score
+  mov byte [di + score_carry_offset], byte 0
+
+
   ; block map
   %include "src/level.asm"
 
 call draw_walls
 call draw_initial_ball
 call draw_initial_player
+call draw_initial_score
 call draw_level
 game_loop:
   call read_time
   call update_ball
   call read_keyboard
   call update_player
+  call update_score
   cmp byte [di + game_over_flag_offset], 1
   je game_over
   jmp game_loop
@@ -109,6 +121,34 @@ draw_initial_ball:
   mov dl, [si + ball_x_offset]
   mov dh, [si + ball_y_offset]
   mov al, ball_char
+  call print_char_at
+  popa
+  ret
+
+draw_initial_score:
+  pusha
+  mov dl, score_display_x
+  mov dh, score_display_y
+  mov al, '0'
+  mov ch, score_display_x
+  sub ch, 4
+  mov cl, score_display_x
+  add cl, 1
+  call print_horizontal_line
+  sub dh, 1
+  mov al, 'E'
+  call print_char_at
+  dec dl
+  mov al, 'R'
+  call print_char_at
+  dec dl
+  mov al, 'O'
+  call print_char_at
+  dec dl
+  mov al, 'C'
+  call print_char_at
+  dec dl
+  mov al, 'S'
   call print_char_at
   popa
   ret
@@ -182,10 +222,39 @@ destroy_block_if_exists:
   jz .return ; no block at position
   pushf ; save zf flag because it's the one we want to return and xor might change it
   xor byte [si + block_map_offset + bx], cl ; remove block from bit map
+  inc byte [si + score_carry_offset]
   ; draw
   mov al, empty_char
   call print_char_at
   popf ; restore zf
+  .return:
+    popa
+    ret
+
+update_score:
+  pusha
+  cmp byte [si + score_carry_offset], 0
+  je .return
+  mov dx, 0
+  mov dl, byte [si + score_carry_offset]
+  add word [si + score_offset], dx
+  mov byte [si + score_carry_offset], 0
+  mov cx, score_display_width
+  mov ax, word [si + score_offset]
+  mov bx, 10
+  .loop:
+    mov dx, 0
+    div bx ; ax = score // 10, dx = score % 10
+    push ax
+    add dl, '0' ; shift into ascii
+    mov al, dl
+    mov dh, score_display_y
+    mov dl, score_display_x
+    sub dl, score_display_width
+    add dl, cl
+    call print_char_at
+    pop ax
+    loop .loop
   .return:
     popa
     ret
