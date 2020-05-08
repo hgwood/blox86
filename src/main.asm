@@ -15,6 +15,7 @@
 %assign wall_char 58h ; 'X'
 %assign player_char 54h ; 'T'
 %assign ball_char 4fh ; 'O
+%assign block_char 48h ; 'H'
 %assign empty_char 20h ; ' '
 
 ; gameplay constants
@@ -169,7 +170,7 @@ draw_level:
     ; draw
     mov dl, ah
     mov dh, al
-    mov al, 48h ; 'H'
+    mov al, block_char
     call print_char_at
     .next_byte:
       inc bx
