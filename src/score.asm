@@ -9,8 +9,7 @@ draw_initial_score:
   mov al, '0'
   mov ch, score_display_left_x
   mov cl, score_display_left_x
-  add cl, 5
-  add cl, 1
+  add cl, score_display_width
   call print_horizontal_line
   sub dh, 1
   mov al, 'S'
@@ -39,6 +38,7 @@ update_score:
   add word [si + score_offset], dx
   mov byte [si + score_carry_offset], 0
   mov cx, score_display_width
+  sub cx, 1
   mov ax, word [si + score_offset]
   mov bx, 10
   .loop:
