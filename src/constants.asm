@@ -26,6 +26,9 @@
 ; constant positions and sizes
 %assign arena_width 64
 %assign arena_height 24
+%assign arena_left_x 1
+%assign arena_top_y 1
+%assign arena_right_x arena_left_x + arena_width
 %assign arena_bottom arena_height + 1
 
 ; character constants

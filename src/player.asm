@@ -25,14 +25,20 @@ update_player:
     sub ch, al
     mov cl, [si + player_left_x_offset]
     ; check boundary
-    cmp ch, 0
-    jle .return
-    ; draw
-    push ax
-    mov al, player_char
-    mov dh, player_y
-    call print_horizontal_line
-    pop ax
+    cmp ch, arena_left_x
+    jge .draw_extend_left_side
+    ; wall reached, clamp movement
+    mov dh, 1
+    sub dh, ch
+    sub al, dh
+    mov ch, [si + player_left_x_offset]
+    sub ch, al
+    .draw_extend_left_side:
+      push ax
+      mov al, player_char
+      mov dh, player_y
+      call print_horizontal_line
+      pop ax
     ; shrink right side
     mov ch, [si + player_left_x_offset]
     add ch, [si + player_size_offset]
@@ -54,14 +60,19 @@ update_player:
     mov cl, ch
     add cl, ah
     ; check boundary
-    cmp cl, right_wall_x
-    jg .return
-    ; draw
-    push ax
-    mov al, player_char
-    mov dh, player_y
-    call print_horizontal_line
-    pop ax
+    cmp cl, arena_right_x
+    jle .draw_extend_right_side
+    ; wall reached, clamp movement
+    sub cl, arena_right_x
+    sub ah, cl
+    mov cl, ch
+    add cl, ah
+    .draw_extend_right_side:
+      push ax
+      mov al, player_char
+      mov dh, player_y
+      call print_horizontal_line
+      pop ax
     ; shrink left side
     mov ch, [si + player_left_x_offset]
     mov cl, ch
