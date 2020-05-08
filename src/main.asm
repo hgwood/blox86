@@ -28,7 +28,7 @@ game_loop:
     ; have to reset the game state clock
     ; otherwise when we resume the game will
     ; think a lot of time has past and will
-    ; the ball too far
+    ; shoot the ball far away
     mov dword [di + system_time_offset], 0
     jmp game_loop
 
