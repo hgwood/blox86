@@ -1,7 +1,7 @@
 BITS 16
 
 %include "src/constants.asm"
-%include "src/memory.asm"
+%include "src/memory_setup.asm"
 %include "src/game_state.asm"
 %include "src/level.asm"
 
