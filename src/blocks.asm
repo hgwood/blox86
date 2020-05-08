@@ -1,3 +1,8 @@
+%assign block_char 48h ; 'H'
+
+; block operations
+%assign block_is_alive_mask 0000_0001b
+
 ; draws all blocks
 draw_level:
   pusha
