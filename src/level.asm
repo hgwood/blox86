@@ -1,4 +1,5 @@
 %assign level_size 384
+%assign level_offset 32
 
 %assign level_line_00_offset level_offset
 %assign level_line_01_offset level_line_00_offset + 64

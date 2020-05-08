@@ -14,7 +14,6 @@
 %assign system_time_msw_offset system_time_offset + 2
 %assign score_offset system_time_msw_offset + 2
 %assign score_carry_offset score_offset + 2
-%assign level_offset 32
 
 ; initialize game state
 mov byte [di + player_left_x_offset], byte initial_player_left_x ; absolute coordinate
