@@ -40,6 +40,7 @@
 %assign ball_speed_x_offset 6
 %assign ball_speed_y_offset 7
 %assign game_over_flag_offset 8
+%assign pause_flag_offset 9
 %assign system_time_offset 10
 %assign system_time_lsw_offset system_time_offset
 %assign system_time_msw_offset system_time_offset + 2
@@ -77,6 +78,7 @@ start:
   mov byte [di + ball_speed_x_offset], byte initial_ball_speed_x ; in ticks per unit: 1 is fastest, greater is slower
   mov byte [di + ball_speed_y_offset], byte initial_ball_speed_y ; in ticks per unit: 1 is fastest, greater is slower
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
+  mov byte [di + pause_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
   mov word [di + score_offset], word initial_score
   mov byte [di + score_carry_offset], byte 0
@@ -91,14 +93,19 @@ call draw_initial_player
 call draw_initial_score
 call draw_level
 game_loop:
+  call read_keyboard
+  cmp byte [si + pause_flag_offset], 0
+  jne .pause
+  call update_player
   call read_time
   call update_ball
-  call read_keyboard
-  call update_player
   call update_score
-  cmp byte [di + game_over_flag_offset], 1
-  je game_over
+  cmp byte [si + game_over_flag_offset], 0
+  jne game_over
   jmp game_loop
+  .pause:
+    mov dword [di + system_time_offset], 0
+    jmp game_loop
 
 game_over:
   mov dh, game_over_display_y
@@ -479,6 +486,8 @@ read_keyboard:
     je .left_requested
     cmp ah, 4dh
     je .right_requested
+    cmp ah, 39h
+    not byte [di + pause_flag_offset]
     jmp .read_next_key
   .left_requested:
     add bl, player_speed_multiplier

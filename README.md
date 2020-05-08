@@ -10,3 +10,8 @@ It was made as an entry to a small contest organized by my co-workers. I learned
 - Build the bootable ISO with `docker-compose run --rm build`.
 - Create a VM and mount `target/boot.iso` into the CD drive.
 - Run the VM.
+
+## Game controls
+
+- Left/right arrow: move
+- Space: pause
