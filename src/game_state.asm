@@ -14,6 +14,7 @@
 %assign system_time_msw_offset system_time_offset + 2
 %assign score_offset system_time_msw_offset + 2
 %assign score_carry_offset score_offset + 2
+%assign invincible_flag_offset score_carry_offset + 1
 
 ; initialize game state
 mov byte [di + player_left_x_offset], byte initial_player_left_x ; absolute coordinate
@@ -29,3 +30,4 @@ mov byte [di + pause_flag_offset], byte 0 ; boolean
 mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
 mov word [di + score_offset], word initial_score
 mov byte [di + score_carry_offset], byte 0
+mov byte [di + invincible_flag_offset], byte 0

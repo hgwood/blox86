@@ -80,6 +80,8 @@ update_ball:
       call update_ball
       jmp .return
     .maybe_player_hit:
+      cmp byte [si + invincible_flag_offset], 0
+      jne .vertical_wall_hit
       mov cl, byte [si + ball_x_offset]
       cmp cl, byte [si + player_left_x_offset] ; compare ball x with player left x
       jl .ball_lost ; ball is left of player

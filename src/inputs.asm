@@ -17,13 +17,21 @@ read_keyboard:
     cmp ah, 4dh
     je .right_requested
     cmp ah, 39h
-    not byte [di + pause_flag_offset]
+    je .toggle_pause
+    cmp ah, 17h
+    je .toggle_invincible
     jmp .read_next_key
   .left_requested:
     add bl, player_speed_multiplier
     jmp .read_next_key
   .right_requested:
     add bh, player_speed_multiplier
+    jmp .read_next_key
+  .toggle_pause:
+    not byte [di + pause_flag_offset]
+    jmp .read_next_key
+  .toggle_invincible:
+    not byte [di + invincible_flag_offset]
     jmp .read_next_key
   .return:
     mov ax, bx
