@@ -87,6 +87,7 @@ start:
   ; block map
   %include "src/level.asm"
 
+call hide_cursor
 call draw_walls
 call draw_initial_ball
 call draw_initial_player
@@ -581,6 +582,14 @@ print_char_at:
   mov ah, 02h
   int 10h
   mov ah, 0eh
+  int 10h
+  popa
+  ret
+
+hide_cursor:
+  pusha
+  mov cx, 2607h
+  mov ah, 01h
   int 10h
   popa
   ret
