@@ -14,10 +14,10 @@
 ; notice that this unit is inverted, so greater values mean slower speeds
 ; zero means the ball is not moving horizontally, positive speed means going left, negative speed means going right
 ; range [1, 255]
-%assign initial_ball_speed_x 6
+%assign initial_ball_speed_x 2
 ; vertical speed with which the ball starts
 ; same remarks as for horizontal speed apply
-%assign initial_ball_speed_y 6
+%assign initial_ball_speed_y 2
 ; the score with which the player starts
 %assign initial_score 0
 ; specifies how many spatial units can a player traval with one key press
