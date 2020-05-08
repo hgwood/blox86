@@ -45,23 +45,5 @@
 ; specifies how many spatial units can a player traval with one key press
 %assign player_speed_multiplier 4
 
-; game state offsets
-%assign player_left_x_offset 0
-%assign player_size_offset 1
-%assign ball_x_offset 2
-%assign ball_y_offset 3
-%assign ball_x_carry_offset 4
-%assign ball_y_carry_offset 5
-%assign ball_speed_x_offset 6
-%assign ball_speed_y_offset 7
-%assign game_over_flag_offset 8
-%assign pause_flag_offset 9
-%assign system_time_offset 10
-%assign system_time_lsw_offset system_time_offset
-%assign system_time_msw_offset system_time_offset + 2
-%assign score_offset system_time_msw_offset + 2
-%assign score_carry_offset score_offset + 2
-%assign level_offset 32
-
 ; block operations
 %assign block_is_alive_mask 0000_0001b
