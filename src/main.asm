@@ -7,7 +7,7 @@
 %assign arena_left left_wall_x + 1
 %assign player_y top_wall_y + arena_height
 %assign arena_bottom player_y + 1
-%assign score_display_x 79
+%assign score_display_left_x 68
 %assign score_display_y 1
 %assign score_display_width 5
 %assign game_over_display_left_x 68
@@ -154,28 +154,28 @@ draw_initial_ball:
 
 draw_initial_score:
   pusha
-  mov dl, score_display_x
+  mov dl, score_display_left_x
   mov dh, score_display_y
   mov al, '0'
-  mov ch, score_display_x
-  sub ch, 4
-  mov cl, score_display_x
+  mov ch, score_display_left_x
+  mov cl, score_display_left_x
+  add cl, 5
   add cl, 1
   call print_horizontal_line
   sub dh, 1
-  mov al, 'E'
+  mov al, 'S'
   call print_char_at
-  dec dl
-  mov al, 'R'
-  call print_char_at
-  dec dl
-  mov al, 'O'
-  call print_char_at
-  dec dl
+  inc dl
   mov al, 'C'
   call print_char_at
-  dec dl
-  mov al, 'S'
+  inc dl
+  mov al, 'O'
+  call print_char_at
+  inc dl
+  mov al, 'R'
+  call print_char_at
+  inc dl
+  mov al, 'E'
   call print_char_at
   popa
   ret
@@ -276,8 +276,7 @@ update_score:
     add dl, '0' ; shift into ascii
     mov al, dl
     mov dh, score_display_y
-    mov dl, score_display_x
-    sub dl, score_display_width
+    mov dl, score_display_left_x
     add dl, cl
     call print_char_at
     pop ax
