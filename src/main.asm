@@ -25,6 +25,10 @@ game_loop:
   jne game_over
   jmp game_loop
   .pause:
+    ; have to reset the game state clock
+    ; otherwise when we resume the game will
+    ; think a lot of time has past and will
+    ; the ball too far
     mov dword [di + system_time_offset], 0
     jmp game_loop
 
