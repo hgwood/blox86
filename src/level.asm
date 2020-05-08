@@ -1,3 +1,5 @@
+%assign level_size 64
+
 mov byte [di + block_map_offset + 00], byte 1
 mov byte [di + block_map_offset + 01], byte 1
 mov byte [di + block_map_offset + 02], byte 1

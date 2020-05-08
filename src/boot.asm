@@ -44,8 +44,6 @@
 %assign score_carry_offset score_offset + 2
 %assign block_map_offset 32
 
-%assign level_size_bytes 64
-
 ; block operations
 %assign block_is_alive_mask 0000_0001b
 
@@ -175,7 +173,7 @@ draw_level:
     call print_char_at
     .next_byte:
       inc bx
-      cmp bx, level_size_bytes
+      cmp bx, level_size
       jl .byte_loop
   .return:
     popa
