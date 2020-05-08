@@ -46,7 +46,7 @@
 %assign system_time_msw_offset system_time_offset + 2
 %assign score_offset system_time_msw_offset + 2
 %assign score_carry_offset score_offset + 2
-%assign block_map_offset 32
+%assign level_offset 32
 
 ; block operations
 %assign block_is_alive_mask 0000_0001b
@@ -193,7 +193,7 @@ draw_level:
   mov bx, 0 ; block index
   .byte_loop:
     mov al, block_is_alive_mask
-    and al, byte [si + block_map_offset + bx]
+    and al, byte [si + level_offset + bx]
     jz .next_byte
     ; compute coordinates to draw
     ; x = block_index % arena_width + 1
@@ -253,10 +253,10 @@ destroy_block_if_exists:
   call convert_to_block_index
   mov bx, ax ; bx is the only register supported as memory offset so we move block index to it
   mov cl, block_is_alive_mask
-  and cl, byte [si + block_map_offset + bx]
+  and cl, byte [si + level_offset + bx]
   jz .return ; no block at position
   pushf ; save zf flag because it's the one we want to return and xor might change it
-  xor byte [si + block_map_offset + bx], cl ; remove block from bit map
+  xor byte [si + level_offset + bx], cl ; remove block from bit map
   inc byte [si + score_carry_offset]
   ; draw
   mov al, empty_char
