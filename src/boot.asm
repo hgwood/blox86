@@ -15,7 +15,13 @@
 %assign empty_char 20h ; ' '
 
 ; gameplay constants
-%assign player_speed_multiplier 2
+%assign initial_player_left_x 10
+%assign initial_player_size 5
+%assign initial_ball_x 10
+%assign initial_ball_y 10
+%assign initial_ball_speed_x 1
+%assign initial_ball_speed_y 1
+%assign player_speed_multiplier 4
 
 ; game state offsets
 %assign player_left_x_offset 0
@@ -55,14 +61,14 @@ start:
   mov di, ds ; set destination index pointer
 
   ; initialize game state
-  mov byte [di + player_left_x_offset], byte 10 ; absolute coordinate
-  mov byte [di + player_size_offset], byte 20 ; absolute coordinate
-  mov byte [di + ball_x_offset], byte 1 ; absolute coordinate
-  mov byte [di + ball_y_offset], byte 1 ; absolute coordinate
+  mov byte [di + player_left_x_offset], byte initial_player_left_x ; absolute coordinate
+  mov byte [di + player_size_offset], byte initial_player_size ; absolute coordinate
+  mov byte [di + ball_x_offset], byte initial_ball_x ; absolute coordinate
+  mov byte [di + ball_y_offset], byte initial_ball_y ; absolute coordinate
   mov byte [di + ball_x_carry_offset], byte 0 ; in ticks
   mov byte [di + ball_y_carry_offset], byte 0 ; in ticks
-  mov byte [di + ball_speed_x_offset], byte 1 ; in ticks per unit
-  mov byte [di + ball_speed_y_offset], byte 1 ; in ticks per unit
+  mov byte [di + ball_speed_x_offset], byte initial_ball_speed_x ; in ticks per unit: 1 is fastest, greater is slower
+  mov byte [di + ball_speed_y_offset], byte initial_ball_speed_y ; in ticks per unit: 1 is fastest, greater is slower
   mov byte [di + game_over_flag_offset], byte 0 ; boolean
   mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
   ; block map
