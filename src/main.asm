@@ -1,98 +1,31 @@
-; constant positions and sizes
-%assign arena_width 64
-%assign arena_height 24
-%assign left_wall_x 0
-%assign top_wall_y 0
-%assign right_wall_x left_wall_x + arena_width + 1
-%assign arena_left left_wall_x + 1
-%assign player_y top_wall_y + arena_height
-%assign arena_bottom player_y + 1
-%assign score_display_left_x 68
-%assign score_display_y 2
-%assign score_display_width 5
-%assign game_over_display_left_x 68
-%assign game_over_display_y 4
-
-; character constants
-%assign wall_char 58h ; 'X'
-%assign player_char 54h ; 'T'
-%assign ball_char 4fh ; 'O
-%assign block_char 48h ; 'H'
-%assign empty_char 20h ; ' '
-
-; gameplay constants
-%assign initial_player_left_x 10
-%assign initial_player_size 5
-%assign initial_ball_x 10
-%assign initial_ball_y 10
-%assign initial_ball_speed_x 1
-%assign initial_ball_speed_y 1
-%assign initial_score 0
-%assign player_speed_multiplier 4
-
-; game state offsets
-%assign player_left_x_offset 0
-%assign player_size_offset 1
-%assign ball_x_offset 2
-%assign ball_y_offset 3
-%assign ball_x_carry_offset 4
-%assign ball_y_carry_offset 5
-%assign ball_speed_x_offset 6
-%assign ball_speed_y_offset 7
-%assign game_over_flag_offset 8
-%assign pause_flag_offset 9
-%assign system_time_offset 10
-%assign system_time_lsw_offset system_time_offset
-%assign system_time_msw_offset system_time_offset + 2
-%assign score_offset system_time_msw_offset + 2
-%assign score_carry_offset score_offset + 2
-%assign level_offset 32
-
-; block operations
-%assign block_is_alive_mask 0000_0001b
-
 BITS 16
 
-start:
-  ; set up 4K stack space after this bootloader
-  mov ax, 7c0h ; 7c0 is the address of the bootloader
-  add ax, 1024 ; skip to the end of the bootloader
-  mov ss, ax ; set stack segment
-  mov sp, 4095 ; set stack pointer to empty stack (remember the stack is reversed)
+%include "src/constants.asm"
+%include "src/memory.asm"
 
-  ; set up the data segment after the stack
-  mov ax, 7c0h ; 7c0 is the address of the bootloader
-  add ax, 1024 ; skip to the end of the bootloader
-  add ax, 4096 ; skip to the end of the stack
-  mov ds, ax ; set data segment
-  mov si, ds ; set source index pointer
-  mov di, ds ; set destination index pointer
+; initialize game state
+mov byte [di + player_left_x_offset], byte initial_player_left_x ; absolute coordinate
+mov byte [di + player_size_offset], byte initial_player_size ; absolute coordinate
+mov byte [di + ball_x_offset], byte initial_ball_x ; absolute coordinate
+mov byte [di + ball_y_offset], byte initial_ball_y ; absolute coordinate
+mov byte [di + ball_x_carry_offset], byte 0 ; in ticks
+mov byte [di + ball_y_carry_offset], byte 0 ; in ticks
+mov byte [di + ball_speed_x_offset], byte initial_ball_speed_x ; in ticks per unit: 1 is fastest, greater is slower
+mov byte [di + ball_speed_y_offset], byte initial_ball_speed_y ; in ticks per unit: 1 is fastest, greater is slower
+mov byte [di + game_over_flag_offset], byte 0 ; boolean
+mov byte [di + pause_flag_offset], byte 0 ; boolean
+mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
+mov word [di + score_offset], word initial_score
+mov byte [di + score_carry_offset], byte 0
 
-  ; initialize game state
-  mov byte [di + player_left_x_offset], byte initial_player_left_x ; absolute coordinate
-  mov byte [di + player_size_offset], byte initial_player_size ; absolute coordinate
-  mov byte [di + ball_x_offset], byte initial_ball_x ; absolute coordinate
-  mov byte [di + ball_y_offset], byte initial_ball_y ; absolute coordinate
-  mov byte [di + ball_x_carry_offset], byte 0 ; in ticks
-  mov byte [di + ball_y_carry_offset], byte 0 ; in ticks
-  mov byte [di + ball_speed_x_offset], byte initial_ball_speed_x ; in ticks per unit: 1 is fastest, greater is slower
-  mov byte [di + ball_speed_y_offset], byte initial_ball_speed_y ; in ticks per unit: 1 is fastest, greater is slower
-  mov byte [di + game_over_flag_offset], byte 0 ; boolean
-  mov byte [di + pause_flag_offset], byte 0 ; boolean
-  mov dword [di + system_time_offset], dword 0 ; in ticks since midnight as provided by the BIOS, see http://vitaly_filatov.tripod.com/ng/asm/asm_029.1.html
-  mov word [di + score_offset], word initial_score
-  mov byte [di + score_carry_offset], byte 0
-
-
-  ; block map
-  %include "src/level.asm"
+%include "src/level.asm"
 
 call hide_cursor
 call draw_walls
+call draw_level
 call draw_initial_ball
 call draw_initial_player
 call draw_initial_score
-call draw_level
 game_loop:
   call read_keyboard
   cmp byte [si + pause_flag_offset], 0
@@ -187,84 +120,6 @@ draw_initial_score:
   call print_char_at
   popa
   ret
-
-draw_level:
-  pusha
-  mov bx, 0 ; block index
-  .byte_loop:
-    mov al, block_is_alive_mask
-    and al, byte [si + level_offset + bx]
-    jz .next_byte
-    ; compute coordinates to draw
-    ; x = block_index % arena_width + 1
-    ; y = block_index // arena_width + 1
-    mov ax, bx
-    mov dl, arena_width
-    div dl ; al = block_index // arena_width, ah = block_index % arena_width
-    inc al
-    inc ah
-    ; draw
-    mov dl, ah
-    mov dh, al
-    mov al, block_char
-    call print_char_at
-    .next_byte:
-      inc bx
-      cmp bx, level_size
-      jl .byte_loop
-  .return:
-    popa
-    ret
-
-; converts game coordinates to block index to lookup the block map
-; computations is as follows:
-;   block index = (y - 1) * arena_width + (x - 1)
-; parameters
-;   al = x
-;   ah = y
-; returns
-;   ax = block index
-convert_to_block_index:
-  push bx
-  push cx
-  mov bx, ax
-  mov ax, 0
-  mov al, bh ; al = y
-  sub al, 1 ; al = y - 1
-  mov cl, arena_width
-  mul cl ; ax = (y - 1) * arena_width
-  mov bh, 0
-  add ax, bx ; ax = (y - 1) * arena_width + x
-  dec ax ; ax = (y - 1) * arena_width + x - 1
-  pop cx
-  pop bx
-  ret
-
-; destroys block at given position if one exists
-; parameters
-;   al = x
-;   ah = y
-; returns
-;   zero-flag set if no block
-;   zero-flag cleared if block was destroyed
-destroy_block_if_exists:
-  pusha
-  mov dx, ax ; save position in dx so we can draw at the end if block was destroyed
-  call convert_to_block_index
-  mov bx, ax ; bx is the only register supported as memory offset so we move block index to it
-  mov cl, block_is_alive_mask
-  and cl, byte [si + level_offset + bx]
-  jz .return ; no block at position
-  pushf ; save zf flag because it's the one we want to return and xor might change it
-  xor byte [si + level_offset + bx], cl ; remove block from bit map
-  inc byte [si + score_carry_offset]
-  ; draw
-  mov al, empty_char
-  call print_char_at
-  popf ; restore zf
-  .return:
-    popa
-    ret
 
 update_score:
   pusha
@@ -470,66 +325,6 @@ update_ball:
     popa
     ret
 
-; reads keyboard buffer until exhaustion
-; returns
-;   al = number of key presses on left arrow
-;   ah = number of key presses on right arrow
-read_keyboard:
-  push bx
-  mov bx, 0
-  .read_next_key:
-    mov ah, 01h
-    int 16h
-    jz .return
-    mov ah, 00h
-    int 16h
-    cmp ah, 4bh
-    je .left_requested
-    cmp ah, 4dh
-    je .right_requested
-    cmp ah, 39h
-    not byte [di + pause_flag_offset]
-    jmp .read_next_key
-  .left_requested:
-    add bl, player_speed_multiplier
-    jmp .read_next_key
-  .right_requested:
-    add bh, player_speed_multiplier
-    jmp .read_next_key
-  .return:
-    mov ax, bx
-    pop bx
-    ret
-
-; updates the game state to the current time
-; returns
-;   cx:dx = the delta between the previous game state time and the new game state time
-read_time:
-  ; save non-return registers
-  push ax
-  push bx
-  ; read system time into cx:dx
-  mov ah, 00h
-  int 1ah
-  ; save system time to ax:bx
-  mov bx, dx
-  mov ax, cx
-  ; compute delta
-  sub dx, word [si + system_time_lsw_offset]
-  sbb cx, word [si + system_time_msw_offset]
-  ; return delta zero if game state has clock zero
-  cmp dword [si + 10], 0
-  jne .update_game_state
-  mov cx, 0
-  mov dx, 0
-  .update_game_state:
-    mov word [di + system_time_lsw_offset], bx
-    mov word [di + system_time_msw_offset], ax
-  ; restore non-return registers
-  pop bx
-  pop ax
-  ret
-
 draw_walls:
   pusha
   mov al, wall_char
@@ -551,47 +346,8 @@ draw_walls:
   popa
   ret
 
-; prints horizontal line of char=al at y=dh from x1=ch to x2=cl exclusive
-print_horizontal_line:
-  pusha
-  mov dl, ch
-  print_horizontal_line_loop:
-    call print_char_at
-    inc dl
-    cmp dl, cl
-    jl print_horizontal_line_loop
-  popa
-  ret
-
-; prints vertical line of char=al at x=dl from y1=ch to y2=cl exclusive
-print_vertical_line:
-  pusha
-  mov dh, ch
-  print_vertical_line_loop:
-    call print_char_at
-    inc dh
-    cmp dh, cl
-    jl print_vertical_line_loop
-  popa
-  ret
-
-; prints char=al at x=dl, y=dh
-print_char_at:
-  pusha
-  mov bh, 0
-  mov ah, 02h
-  int 10h
-  mov ah, 0eh
-  int 10h
-  popa
-  ret
-
-hide_cursor:
-  pusha
-  mov cx, 2607h
-  mov ah, 01h
-  int 10h
-  popa
-  ret
+%include "src/blocks.asm"
+%include "src/inputs.asm"
+%include "src/text.asm"
 
 dw 0aa55h ; the standard PC boot signature
