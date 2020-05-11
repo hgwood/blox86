@@ -15,19 +15,19 @@ It was made as an entry to a contest organized by my co-workers. I learned assem
 - Create a VM and mount `target/blox86.iso` into the CD drive.
 - Run the VM.
 
-## Game controls
+## Game mechanics
+
+### Controls
 
 - Left/right arrow: move
 - Space: pause
 - I: invincible mode, the ball will always bounce off the bottom of the arena
 
-## Tweaking gameplay
+### Tweaking gameplay
 
-Edit `src/constants.asm` to change how the game behaves.
+Edit `src/constants.asm` to change how the game behaves. You'll have to rebuild the program to apply the changes.
 
-## Game mechanics
-
-### Collisions
+### How collisions work
 
 Collisions are handled as follows:
 1. Update the horizontal ball position according to its horizontal speed
