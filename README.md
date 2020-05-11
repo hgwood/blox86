@@ -24,3 +24,46 @@ It was made as an entry to a small contest organized by my co-workers. I learned
 ## Tweaking gameplay
 
 Edit `src/constants.asm` to change how the game behaves.
+
+## Game mechanics
+
+### Collisions
+
+Collisions are handled as follows:
+1. Update the horizontal ball position according to its horizontal speed
+2. If the new position is taken by a wall or block, rewind to the original position, reverse the horizontal speed, and restart. Notice that the position that is checked here is *not* the next ball position as the vertical position has not been updated yet. This means balls that move horizontally bounce off blocks next to them, irrelevant of their vertical movement (see figure 1).
+3. Do the same for the vertical axis. Notice that this time,
+the horizontal position has already been updated. This means that balls that move both vertically and horizontally do *not* hit blocks above or below them (see figure 2).
+
+Figure 1: ball bounces off a block on its right (`H` is a block, numbers are successive positions of the ball).
+
+```
+------
+| 4  |
+|  3H|
+| 2  |
+|1   |
+------
+```
+
+Figure 2: ball does not bounce off a block above it.
+
+```
+------
+|  H4|
+|  3 |
+| 2  |
+|1   |
+------
+```
+
+This is especially important in player interactions. When the ball is above the edge of the player and the ball's next position is not 'inside' the player, the ball *will* go through and the player will lose, as shown in figure 3.
+
+```
+-------
+| 1   |
+|  2  |
+|   3 |
+| TTT4|
+-------
+```
