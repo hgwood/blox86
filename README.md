@@ -12,7 +12,7 @@ It was made as an entry to a small contest organized by my co-workers. I learned
 
 - Install VirtualBox.
 - Build the bootable ISO with `docker-compose run --rm build`.
-- Create a VM and mount `target/boot.iso` into the CD drive.
+- Create a VM and mount `target/blox86.iso` into the CD drive.
 - Run the VM.
 
 ## Game controls
