@@ -19,9 +19,9 @@ It was made as an entry to a contest organized by my co-workers. I learned assem
 
 ### Controls
 
-- Left/right arrow: move
+- ⬅/➡: move
 - Space: pause
-- I: invincible mode, the ball will always bounce off the bottom of the arena
+- `I`: invincible mode (the ball will always bounce off the bottom of the arena)
 
 ### Tweaking gameplay
 
