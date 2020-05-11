@@ -6,7 +6,7 @@ It is compiled into a flat executable. It does not respect any binary format, an
 The only way to run it is to boot a machine with it. A machine with a BIOS. It not compatible with UEFI.
 The only tested environment is a VirtualBox VM without UEFI enabled.
 
-It was made as an entry to a small contest organized by my co-workers. I learned assembly specifically for this project, so the code is probably not good at all.
+It was made as an entry to a contest organized by my co-workers. I learned assembly specifically for this project, so the code is probably not good at all.
 
 ## How to run 🚀
 
@@ -59,6 +59,8 @@ Figure 2: ball does not bounce off a block above it.
 
 This is especially important in player interactions. When the ball is above the edge of the player and the ball's next position is not 'inside' the player, the ball *will* go through and the player will lose, as shown in figure 3.
 
+Figure 3: player is surprised by the collision system!
+
 ```
 -------
 | 1   |
@@ -67,3 +69,5 @@ This is especially important in player interactions. When the ball is above the 
 | TTT4|
 -------
 ```
+
+This implementation was chosen because it is easy to code, and time was limited in the context of the contest.
