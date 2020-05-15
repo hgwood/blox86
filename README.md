@@ -11,10 +11,31 @@ tested environment is a VirtualBox VM without UEFI enabled.
 ## Why?
 
 My co-workers organized a contest where the goal was to write a text-based
-block-breaking game (with a deadline). Any tech could be used, so I ceased the
+block-breaking game (under a deadline). Any tech could be used, so I ceased the
 opportunity to learn new stuff. The initial challenge I imposed to myself was:
 let's make this with as little dependencies as possible. Can I write a program
 that doesn't even need an OS?
+
+So what did I learn?
+
+- [How does a BIOS-based PC
+  start?](https://wiki.osdev.org/System_Initialization_(x86))
+- [What makes a program
+  bootable?](http://mikeos.sourceforge.net/write-your-own-os.html)
+- x86 CPUs, for compatibilty reasons, start in [a 16-bits mode called "real
+  mode"](https://wiki.osdev.org/Real_mode). Transitioning to 32 or 64-bits modes
+  (aka [protected mode](https://wiki.osdev.org/Protected_Mode) and [long
+  mode](https://wiki.osdev.org/Long_Mode) respectively) requires code. Programs
+  running in these "more advanced" mode loose access to the BIOS API.
+- The BIOS has an API that a program can use (if in real mode) to communicate
+  with devices like the keyboard, screen, drives, clock.
+- The 8086 and 80186 [instruction
+  sets](https://en.wikipedia.org/wiki/X86_instruction_listings) and
+  [registers](https://en.wikipedia.org/wiki/X86#16-bit).
+- [The NASM language](https://www.nasm.us/).
+- Programming using only 8 and 16-bits integers, especially with regards to
+  calculating the ball trajectory.
+- Programming without any logs or debugger.
 
 ## Disclaimer
 
