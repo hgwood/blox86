@@ -11,7 +11,7 @@ tested environment is a VirtualBox VM without UEFI enabled.
 ## Why?
 
 My co-workers organized a contest where the goal was to write a text-based
-block-breaking game (under a deadline). Any tech could be used, so I ceased the
+block-breaking game (under a deadline). Any tech could be used, so I seized the
 opportunity to learn new stuff. The initial challenge I imposed to myself was:
 let's make this with as little dependencies as possible. Can I write a program
 that doesn't even need an OS?
